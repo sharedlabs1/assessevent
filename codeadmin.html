@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Challenge Admin - LTIMindtree</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .header .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            margin-bottom: 1.5rem;
+            color: #fbbf24;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .test-case {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .test-case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .test-case-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .monaco-editor-container {
+            height: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .challenge-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .challenge-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .challenge-item.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .challenge-item h4 {
+            margin-bottom: 0.5rem;
+            color: #fbbf24;
+        }
+
+        .challenge-item .difficulty {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .difficulty.easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .difficulty.medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .difficulty.hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .submissions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .submissions-table th,
+        .submissions-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .submissions-table th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-passed { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .status-failed { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-partial { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            min-width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .test-case-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-laptop-code"></i> Coding Challenge Admin</h1>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="admin.html" class="btn btn-secondary">
+                <i class="fas fa-chart-line"></i> MCQ Admin
+            </a>
+            <button id="logoutBtn" class="btn btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <h3 style="margin-bottom: 1rem;">Challenges</h3>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="showCreateChallengeModal()">
+                <i class="fas fa-plus"></i> Create New Challenge
+            </button>
+            <div class="challenge-list" id="challengeList">
+                <!-- Challenges will be loaded here -->
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Statistics -->
+            <div class="section">
+                <h2><i class="fas fa-chart-bar"></i> Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalChallenges">0</div>
+                        <div>Total Challenges</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalSubmissions">0</div>
+                        <div>Total Submissions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeUsers">0</div>
+                        <div>Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="avgScore">0%</div>
+                        <div>Average Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Submissions -->
+            <div class="section">
+                <h2><i class="fas fa-code-branch"></i> Recent Submissions</h2>
+                <table class="submissions-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Challenge</th>
+                            <th>Status</th>
+                            <th>Score</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsTableBody">
+                        <!-- Submissions will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Challenge Modal -->
+    <div class="modal" id="challengeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create New Challenge</h3>
+                <button class="close-btn" onclick="closeChallengeModal()">&times;</button>
+            </div>
+            
+            <form id="challengeForm">
+                <div class="form-group">
+                    <label for="challengeTitle">Challenge Title</label>
+                    <input type="text" id="challengeTitle" required placeholder="Enter challenge title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="challengeDescription">Description</label>
+                    <textarea id="challengeDescription" rows="4" required placeholder="Describe the problem..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="challengeDifficulty">Difficulty</label>
+                    <select id="challengeDifficulty" required>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="challengeTimeLimit">Time Limit (minutes)</label>
+                    <input type="number" id="challengeTimeLimit" value="30" min="5" max="180">
+                </div>
+                
+                <div class="form-group">
+                    <label for="starterCode">Starter Code (Python)</label>
+                    <div class="monaco-editor-container" id="starterCodeEditor"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="solutionCode">Solution Code (for testing)</label>
+                    <div class="monaco-editor-container" id="solutionCodeEditor"></div>
+                </div>
+                
+                <div style="margin: 1rem 0;">
+                    <button type="button" class="btn btn-primary" onclick="testSolutionCode()" style="width: 100%;">
+                        <i class="fas fa-play"></i> Test Solution with Analysis
+                    </button>
+                </div>
+                
+                <div id="solutionTestResults" style="display: none; margin: 1rem 0; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <!-- Test results will be displayed here -->
+                </div>
+                
+                <h4 style="margin: 2rem 0 1rem 0;">Test Cases</h4>
+                <div id="testCasesContainer">
+                    <!-- Test cases will be added here -->
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="addTestCase()">
+                    <i class="fas fa-plus"></i> Add Test Case
+                </button>
+                
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Challenge
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeChallengeModal()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    
+    <script>
+        let starterCodeEditor, solutionCodeEditor;
+        let currentChallengeId = null;
+        let testCaseCounter = 0;
+
+        // Initialize Monaco Editor
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            starterCodeEditor = monaco.editor.create(document.getElementById('starterCodeEditor'), {
+                value: 'def solution():\n    # Your code here\n    pass',
+                language: 'python',
+                theme: 'vs-dark',
+                minimap: { enabled: false },
+                automaticLayout: true
+            });
+
+            solutionCodeEditor = monaco.editor.create(document.getElementById('solutionCodeEditor'), {
+                value: 'def solution():\n    # Sample solution\n    pass',
+                language: 'python',
+                theme: 'vs-dark',
+                minimap: { enabled: false },
+                automaticLayout: true
+            });
+        });
+
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = 'admin.html';
+                return false;
+            }
+            return true;
+        }
+
+        // API Functions
+        async function apiRequest(endpoint, options = {}) {
+            const token = localStorage.getItem('adminToken');
+            const response = await fetch(`/api${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+            
+            if (response.status === 401) {
+                localStorage.removeItem('adminToken');
+                window.location.href = 'admin.html';
+                return;
+            }
+            
+            return response;
+        }
+
+        // Load challenges
+        async function loadChallenges() {
+            try {
+                const response = await apiRequest('/coding/challenges');
+                const challenges = await response.json();
+                
+                const challengeList = document.getElementById('challengeList');
+                challengeList.innerHTML = '';
+                
+                challenges.forEach(challenge => {
+                    const challengeElement = document.createElement('div');
+                    challengeElement.className = 'challenge-item';
+                    challengeElement.onclick = () => selectChallenge(challenge.id);
+                    challengeElement.innerHTML = `
+                        <h4>${challenge.title}</h4>
+                        <p style="margin-bottom: 0.5rem; opacity: 0.8;">${challenge.description.substring(0, 100)}...</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="difficulty ${challenge.difficulty}">${challenge.difficulty}</span>
+                            <span style="font-size: 0.9rem; opacity: 0.7;">${challenge.timeLimit}min</span>
+                        </div>
+                    `;
+                    challengeList.appendChild(challengeElement);
+                });
+                
+                document.getElementById('totalChallenges').textContent = challenges.length;
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+            }
+        }
+
+        // Load dashboard stats
+        async function loadDashboardStats() {
+            try {
+                const response = await apiRequest('/coding/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalSubmissions').textContent = stats.totalSubmissions || 0;
+                document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
+                document.getElementById('avgScore').textContent = (stats.avgScore || 0) + '%';
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load recent submissions
+        async function loadRecentSubmissions() {
+            try {
+                const response = await apiRequest('/coding/submissions/recent');
+                const submissions = await response.json();
+                
+                const tbody = document.getElementById('submissionsTableBody');
+                tbody.innerHTML = '';
+                
+                submissions.forEach(submission => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${submission.userName || 'Anonymous'}</td>
+                        <td>${submission.challengeTitle}</td>
+                        <td><span class="status-badge status-${submission.status}">${submission.status}</span></td>
+                        <td>${submission.score}%</td>
+                        <td>${new Date(submission.submittedAt).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="viewSubmission('${submission.id}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+            }
+        }
+
+        // Show create challenge modal
+        function showCreateChallengeModal() {
+            currentChallengeId = null;
+            document.getElementById('modalTitle').textContent = 'Create New Challenge';
+            document.getElementById('challengeForm').reset();
+            document.getElementById('testCasesContainer').innerHTML = '';
+            testCaseCounter = 0;
+            addTestCase(); // Add first test case
+            document.getElementById('challengeModal').style.display = 'block';
+            
+            // Reset editors
+            if (starterCodeEditor) {
+                starterCodeEditor.setValue('def solution():\n    # Your code here\n    pass');
+            }
+            if (solutionCodeEditor) {
+                solutionCodeEditor.setValue('def solution():\n    # Sample solution\n    pass');
+            }
+        }
+
+        // Close challenge modal
+        function closeChallengeModal() {
+            document.getElementById('challengeModal').style.display = 'none';
+        }
+
+        // Add test case
+        function addTestCase() {
+            testCaseCounter++;
+            const container = document.getElementById('testCasesContainer');
+            const testCaseDiv = document.createElement('div');
+            testCaseDiv.className = 'test-case';
+            testCaseDiv.innerHTML = `
+                <div class="test-case-header">
+                    <h5>Test Case ${testCaseCounter}</h5>
+                    <button type="button" class="btn btn-secondary" style="padding: 0.25rem 0.5rem;" onclick="removeTestCase(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="test-case-grid">
+                    <div class="form-group">
+                        <label>Input</label>
+                        <textarea name="testInput" rows="3" placeholder="Enter input for test case"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Expected Output</label>
+                        <textarea name="expectedOutput" rows="3" placeholder="Enter expected output"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="isHidden" style="width: auto; margin-right: 0.5rem;">
+                        Hidden test case (not visible to users)
+                    </label>
+                </div>
+            `;
+            container.appendChild(testCaseDiv);
+        }
+
+        // Remove test case
+        function removeTestCase(button) {
+            button.closest('.test-case').remove();
+        }
+
+        // Save challenge
+        async function saveChallenge(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const testCases = [];
+            
+            document.querySelectorAll('.test-case').forEach(testCase => {
+                const input = testCase.querySelector('[name="testInput"]').value;
+                const output = testCase.querySelector('[name="expectedOutput"]').value;
+                const isHidden = testCase.querySelector('[name="isHidden"]').checked;
+                
+                if (input && output) {
+                    testCases.push({ input, expectedOutput: output, isHidden });
+                }
+            });
+            
+            const challengeData = {
+                title: document.getElementById('challengeTitle').value,
+                description: document.getElementById('challengeDescription').value,
+                difficulty: document.getElementById('challengeDifficulty').value,
+                timeLimit: parseInt(document.getElementById('challengeTimeLimit').value),
+                starterCode: starterCodeEditor.getValue(),
+                solutionCode: solutionCodeEditor.getValue(),
+                testCases
+            };
+            
+            try {
+                const endpoint = currentChallengeId ? `/coding/challenges/${currentChallengeId}` : '/coding/challenges';
+                const method = currentChallengeId ? 'PUT' : 'POST';
+                
+                const response = await apiRequest(endpoint, {
+                    method,
+                    body: JSON.stringify(challengeData)
+                });
+                
+                if (response.ok) {
+                    closeChallengeModal();
+                    loadChallenges();
+                    alert('Challenge saved successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error saving challenge: ' + error.message);
+                }
+            } catch (error) {
+                console.error('Error saving challenge:', error);
+                alert('Error saving challenge. Please try again.');
+            }
+        }
+
+        // Select challenge
+        function selectChallenge(challengeId) {
+            // Remove active class from all items
+            document.querySelectorAll('.challenge-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // Add active class to selected item
+            event.currentTarget.classList.add('active');
+            
+            // TODO: Load challenge details
+            currentChallengeId = challengeId;
+        }
+
+        // View submission
+        function viewSubmission(submissionId) {
+            // TODO: Implement submission viewer
+            alert('Submission viewer will be implemented');
+        }
+
+        // Test solution code with comprehensive analysis
+        async function testSolutionCode() {
+            const solutionCode = solutionCodeEditor.getValue();
+            const testCases = getCurrentTestCases();
+            
+            if (!solutionCode.trim()) {
+                alert('Please enter solution code first.');
+                return;
+            }
+            
+            if (testCases.length === 0) {
+                alert('Please add at least one test case first.');
+                return;
+            }
+            
+            try {
+                const response = await apiRequest('/coding/run', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        code: solutionCode,
+                        testCases: testCases
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displaySolutionTestResults(result);
+                } else {
+                    alert(`Error: ${result.error}`);
+                }
+            } catch (error) {
+                console.error('Error testing solution:', error);
+                alert('Error: Failed to test solution. Please try again.');
+            }
+        }
+
+        // Get current test cases from the form
+        function getCurrentTestCases() {
+            const testCases = [];
+            const container = document.getElementById('testCasesContainer');
+            const testCaseGroups = container.querySelectorAll('.test-case-group');
+            
+            testCaseGroups.forEach(group => {
+                const input = group.querySelector('textarea[placeholder="Input"]').value;
+                const expectedOutput = group.querySelector('textarea[placeholder="Expected Output"]').value;
+                const isHidden = group.querySelector('input[type="checkbox"]').checked;
+                
+                if (input.trim() && expectedOutput.trim()) {
+                    testCases.push({
+                        input: input.trim(),
+                        expectedOutput: expectedOutput.trim(),
+                        isHidden: isHidden
+                    });
+                }
+            });
+            
+            return testCases;
+        }
+
+        // Display comprehensive analysis results for solution testing
+        function displaySolutionTestResults(results) {
+            const resultsContainer = document.getElementById('solutionTestResults');
+            resultsContainer.style.display = 'block';
+            
+            let html = '<h5 style="margin-bottom: 1rem; color: #60a5fa;"><i class="fas fa-chart-bar"></i> Solution Analysis Results</h5>';
+            
+            // Test Results Summary
+            const testResults = results.testResults || [];
+            const passedTests = testResults.filter(r => r.passed).length;
+            const totalTests = testResults.length;
+            
+            html += `
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span><strong>Test Results:</strong></span>
+                        <span style="color: ${passedTests === totalTests ? '#22c55e' : '#ef4444'};">
+                            ${passedTests}/${totalTests} passed
+                        </span>
+                    </div>
+            `;
+            
+            // Individual test results
+            testResults.forEach((test, index) => {
+                const statusClass = test.passed ? '#22c55e' : '#ef4444';
+                const icon = test.passed ? 'fa-check' : 'fa-times';
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 0.25rem 0.5rem; margin: 0.25rem 0; background: rgba(255, 255, 255, 0.05); border-radius: 4px;">
+                        <span>Test ${index + 1}</span>
+                        <span style="color: ${statusClass};"><i class="fas ${icon}"></i> ${test.passed ? 'PASSED' : 'FAILED'}</span>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            // Code Quality Analysis
+            if (results.codeQuality) {
+                const quality = results.codeQuality;
+                html += `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span><strong>Code Quality Score:</strong></span>
+                            <span style="color: ${quality.overallScore >= 80 ? '#22c55e' : quality.overallScore >= 60 ? '#fbbf24' : '#ef4444'};">
+                                ${quality.overallScore}/100
+                            </span>
+                        </div>
+                `;
+                
+                // Quality Issues
+                if (quality.issues && quality.issues.length > 0) {
+                    html += '<div style="font-size: 0.9rem; opacity: 0.8;">Issues found:</div>';
+                    quality.issues.forEach(issue => {
+                        const severityColor = issue.severity === 'critical' ? '#dc2626' : 
+                                           issue.severity === 'major' ? '#ef4444' : '#fbbf24';
+                        html += `
+                            <div style="padding: 0.25rem 0.5rem; margin: 0.25rem 0; background: rgba(255, 255, 255, 0.05); border-radius: 4px; border-left: 3px solid ${severityColor};">
+                                <div style="font-size: 0.8rem; font-weight: 500;">${issue.type.toUpperCase()}</div>
+                                <div style="font-size: 0.8rem; opacity: 0.8;">${issue.message}</div>
+                            </div>
+                        `;
+                    });
+                }
+                html += '</div>';
+            }
+            
+            // Complexity Analysis
+            if (results.complexity) {
+                const complexity = results.complexity;
+                html += `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <span><strong>Complexity:</strong></span>
+                            <span style="color: #60a5fa;">
+                                Time: ${complexity.timeComplexity} | Space: ${complexity.spaceComplexity}
+                            </span>
+                        </div>
+                `;
+                
+                if (complexity.score !== undefined) {
+                    html += `
+                        <div style="font-size: 0.9rem; opacity: 0.8;">
+                            Complexity Score: <span style="color: ${complexity.score >= 80 ? '#22c55e' : complexity.score >= 60 ? '#fbbf24' : '#ef4444'};">${complexity.score}/100</span>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+            }
+            
+            // Suggestions
+            if (results.suggestions && results.suggestions.length > 0) {
+                html += '<div><strong>Suggestions:</strong></div>';
+                results.suggestions.forEach(suggestion => {
+                    const priorityColor = suggestion.priority === 'high' ? '#ef4444' : 
+                                        suggestion.priority === 'medium' ? '#fbbf24' : '#22c55e';
+                    html += `
+                        <div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255, 255, 255, 0.05); border-radius: 4px; border-left: 3px solid ${priorityColor};">
+                            <div style="font-size: 0.9rem; font-weight: 500;">${suggestion.message}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.8;">${suggestion.details}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            resultsContainer.innerHTML = html;
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'index.html';
+        });
+
+        // Challenge form submission
+        document.getElementById('challengeForm').addEventListener('submit', saveChallenge);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (checkAuth()) {
+                loadChallenges();
+                loadDashboardStats();
+                loadRecentSubmissions();
+            }
+        });
+    </script>
+</body>
+</html>

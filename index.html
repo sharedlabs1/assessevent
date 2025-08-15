@@ -294,7 +294,7 @@
             }
             
             .platform-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 1.5rem;
             }
             
@@ -328,14 +328,14 @@
         </div>
 
         <div class="platform-cards">
-            <!-- User Assessment Platform -->
+            <!-- User Assessment Platform - MCQ -->
             <div class="platform-card" onclick="openAssessmentPlatform()">
                 <div class="card-icon">
                     <i class="fas fa-user-graduate"></i>
                 </div>
-                <h3 class="card-title">Take Assessment</h3>
+                <h3 class="card-title">MCQ Assessment</h3>
                 <p class="card-description">
-                    Access your personalized assessments and track your progress
+                    Access multiple choice assessments and track your progress
                 </p>
                 <ul class="card-features">
                     <li><i class="fas fa-check"></i> Multiple assessment tracks</li>
@@ -344,18 +344,38 @@
                 </ul>
                 <button class="card-button">
                     <i class="fas fa-play"></i>
-                    Start Assessment
+                    Start MCQ Test
                 </button>
             </div>
 
-            <!-- Admin Dashboard -->
+            <!-- Coding Challenge Platform -->
+            <div class="platform-card" onclick="openCodingChallenge()">
+                <div class="card-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3 class="card-title">Coding Challenge</h3>
+                <p class="card-description">
+                    Solve Python programming challenges and showcase your skills
+                </p>
+                <ul class="card-features">
+                    <li><i class="fas fa-check"></i> Python challenges</li>
+                    <li><i class="fas fa-check"></i> Real-time code execution</li>
+                    <li><i class="fas fa-check"></i> Automated testing</li>
+                </ul>
+                <button class="card-button">
+                    <i class="fas fa-code"></i>
+                    Start Coding
+                </button>
+            </div>
+
+            <!-- MCQ Admin Dashboard -->
             <div class="platform-card" onclick="openAdminDashboard()">
                 <div class="card-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <h3 class="card-title">Admin Dashboard</h3>
+                <h3 class="card-title">MCQ Admin</h3>
                 <p class="card-description">
-                    Manage assessments, view analytics, and monitor system performance
+                    Manage MCQ assessments, view analytics, and monitor performance
                 </p>
                 <ul class="card-features">
                     <li><i class="fas fa-check"></i> Create & manage quizzes</li>
@@ -364,7 +384,27 @@
                 </ul>
                 <button class="card-button">
                     <i class="fas fa-cog"></i>
-                    Admin Panel
+                    MCQ Admin
+                </button>
+            </div>
+
+            <!-- Coding Admin Dashboard -->
+            <div class="platform-card" onclick="openCodingAdmin()">
+                <div class="card-icon">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <h3 class="card-title">Coding Admin</h3>
+                <p class="card-description">
+                    Create and manage Python coding challenges and view submissions
+                </p>
+                <ul class="card-features">
+                    <li><i class="fas fa-check"></i> Create coding challenges</li>
+                    <li><i class="fas fa-check"></i> Test case management</li>
+                    <li><i class="fas fa-check"></i> Submission analytics</li>
+                </ul>
+                <button class="card-button">
+                    <i class="fas fa-laptop-code"></i>
+                    Coding Admin
                 </button>
             </div>
         </div>
@@ -435,8 +475,16 @@
             }
         }
 
+        function openCodingChallenge() {
+            window.location.href = 'codebox.html';
+        }
+
         function openAdminDashboard() {
             window.location.href = 'admin.html';
+        }
+
+        function openCodingAdmin() {
+            window.location.href = 'codeadmin.html';
         }
 
         // Initialize

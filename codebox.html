@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Challenge - LTIMindtree</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .timer {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #fca5a5;
+        }
+
+        .timer.warning {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.4);
+            color: #fde68a;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .left-panel {
+            width: 40%;
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .right-panel {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .monaco-editor-container {
+            flex: 1;
+            min-height: 0;
+        }
+
+        .output-section {
+            height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .output-tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background 0.3s ease;
+        }
+
+        .output-tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .output-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .challenge-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .difficulty-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-easy { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .difficulty-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .difficulty-hard { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .challenge-description {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .examples-section {
+            margin-bottom: 2rem;
+        }
+
+        .example {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .example h5 {
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+        }
+
+        .example pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+        }
+
+        .test-results {
+            margin-top: 1rem;
+        }
+
+        .test-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .test-passed {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+        }
+
+        .test-failed {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .submission-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #22c55e;
+        }
+
+        /* Quality Analysis Styles */
+        .quality-overview {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quality-score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .score-excellent { background: conic-gradient(#22c55e 0deg 324deg, rgba(34, 197, 94, 0.2) 324deg 360deg); color: #22c55e; }
+        .score-good { background: conic-gradient(#fbbf24 0deg 288deg, rgba(251, 191, 36, 0.2) 288deg 360deg); color: #fbbf24; }
+        .score-poor { background: conic-gradient(#ef4444 0deg 180deg, rgba(239, 68, 68, 0.2) 180deg 360deg); color: #ef4444; }
+
+        .quality-gates {
+            flex: 1;
+        }
+
+        .quality-gate {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gate-passed { border-left: 4px solid #22c55e; }
+        .gate-failed { border-left: 4px solid #ef4444; }
+
+        .quality-issues {
+            margin-top: 1rem;
+        }
+
+        .quality-issue {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .issue-critical { border-left: 4px solid #dc2626; }
+        .issue-major { border-left: 4px solid #ef4444; }
+        .issue-minor { border-left: 4px solid #fbbf24; }
+
+        .complexity-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .complexity-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .complexity-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-top: 0.5rem;
+        }
+
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .suggestion-high { border-left: 4px solid #ef4444; }
+        .suggestion-medium { border-left: 4px solid #fbbf24; }
+        .suggestion-low { border-left: 4px solid #22c55e; }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestion-type {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .unit-test-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .unit-test-code {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .challenge-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 2rem;
+        }
+
+        .challenge-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .challenge-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .challenge-item.active {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .challenge-item h4 {
+            margin-bottom: 0.5rem;
+            color: #fbbf24;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .left-panel {
+                width: 100%;
+                height: 40%;
+            }
+            
+            .right-panel {
+                width: 100%;
+                height: 60%;
+            }
+            
+            .output-section {
+                height: 30%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1><i class="fas fa-code"></i> Coding Challenge</h1>
+            <div class="timer" id="timer">
+                <i class="fas fa-clock"></i>
+                <span id="timeRemaining">30:00</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-secondary" onclick="runCode()">
+                <i class="fas fa-play"></i> Run Code
+            </button>
+            <button class="btn btn-success" onclick="submitSolution()">
+                <i class="fas fa-check"></i> Submit Solution
+            </button>
+            <a href="index.html" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <!-- Challenge Selection -->
+            <h3 style="margin-bottom: 1rem;">Available Challenges</h3>
+            <div class="challenge-list" id="challengeList">
+                <!-- Challenges will be loaded here -->
+            </div>
+
+            <!-- Current Challenge Details -->
+            <div id="challengeDetails" style="display: none;">
+                <div class="challenge-header">
+                    <h2 class="challenge-title" id="challengeTitle">Challenge Title</h2>
+                    <span class="difficulty-badge" id="difficultyBadge">Easy</span>
+                </div>
+
+                <div class="challenge-description" id="challengeDescription">
+                    Challenge description will appear here...
+                </div>
+
+                <div class="examples-section" id="examplesSection">
+                    <!-- Examples will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="code-section">
+                <div class="code-header">
+                    <span><i class="fas fa-python"></i> Python 3</span>
+                    <div>
+                        <button class="btn btn-secondary" onclick="resetCode()" style="padding: 0.25rem 0.5rem; font-size: 0.9rem;">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="monaco-editor-container" id="codeEditor"></div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-tabs">
+                    <div class="output-tab active" onclick="switchTab('output')">
+                        <i class="fas fa-terminal"></i> Output
+                    </div>
+                    <div class="output-tab" onclick="switchTab('tests')">
+                        <i class="fas fa-check-circle"></i> Test Results
+                    </div>
+                    <div class="output-tab" onclick="switchTab('quality')">
+                        <i class="fas fa-shield-alt"></i> Quality
+                    </div>
+                    <div class="output-tab" onclick="switchTab('complexity')">
+                        <i class="fas fa-chart-line"></i> Complexity
+                    </div>
+                    <div class="output-tab" onclick="switchTab('suggestions')">
+                        <i class="fas fa-lightbulb"></i> Suggestions
+                    </div>
+                </div>
+                <div class="output-content" id="outputContent">
+                    <div style="opacity: 0.6; text-align: center; margin-top: 2rem;">
+                        <i class="fas fa-play-circle" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        Click "Run Code" to see output here
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div style="color: #22c55e; font-size: 3rem; margin-bottom: 1rem;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 style="margin-bottom: 1rem;">Congratulations!</h3>
+            <p style="margin-bottom: 2rem;">Your solution has been submitted successfully!</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn btn-primary" onclick="nextChallenge()">
+                    <i class="fas fa-arrow-right"></i> Next Challenge
+                </button>
+                <button class="btn btn-secondary" onclick="closeSuccessModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monaco Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    
+    <script>
+        let codeEditor;
+        let currentChallenge = null;
+        let timeRemaining = 1800; // 30 minutes in seconds
+        let timerInterval;
+        let currentTab = 'output';
+        let analysisResults = null;
+
+        // Initialize Monaco Editor
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            codeEditor = monaco.editor.create(document.getElementById('codeEditor'), {
+                value: '# Select a challenge to start coding',
+                language: 'python',
+                theme: 'vs-dark',
+                fontSize: 14,
+                minimap: { enabled: false },
+                automaticLayout: true,
+                wordWrap: 'on'
+            });
+        });
+
+        // Timer functionality
+        function startTimer() {
+            const timerElement = document.getElementById('timer');
+            const timeDisplay = document.getElementById('timeRemaining');
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Warning when 5 minutes left
+                if (timeRemaining <= 300) {
+                    timerElement.classList.add('warning');
+                }
+                
+                // Time up
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('Time is up! Your session has ended.');
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        }
+
+        // API Functions
+        async function apiRequest(endpoint, options = {}) {
+            const response = await fetch(`/api${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            return response;
+        }
+
+        // Load available challenges
+        async function loadChallenges() {
+            try {
+                const response = await apiRequest('/coding/challenges/available');
+                const challenges = await response.json();
+                
+                const challengeList = document.getElementById('challengeList');
+                challengeList.innerHTML = '';
+                
+                challenges.forEach((challenge, index) => {
+                    const challengeElement = document.createElement('div');
+                    challengeElement.className = 'challenge-item';
+                    challengeElement.onclick = () => selectChallenge(challenge);
+                    challengeElement.innerHTML = `
+                        <h4>${challenge.title}</h4>
+                        <p style="margin-bottom: 0.5rem; opacity: 0.8; font-size: 0.9rem;">${challenge.description.substring(0, 80)}...</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="difficulty-badge difficulty-${challenge.difficulty}">${challenge.difficulty}</span>
+                            <span style="font-size: 0.8rem; opacity: 0.7;"><i class="fas fa-clock"></i> ${challenge.timeLimit}min</span>
+                        </div>
+                    `;
+                    challengeList.appendChild(challengeElement);
+                    
+                    // Auto-select first challenge
+                    if (index === 0) {
+                        selectChallenge(challenge);
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+                document.getElementById('challengeList').innerHTML = '<p style="color: #ef4444;">Error loading challenges. Please refresh the page.</p>';
+            }
+        }
+
+        // Select a challenge
+        function selectChallenge(challenge) {
+            currentChallenge = challenge;
+            
+            // Update active challenge in list
+            document.querySelectorAll('.challenge-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Show challenge details
+            document.getElementById('challengeDetails').style.display = 'block';
+            document.getElementById('challengeTitle').textContent = challenge.title;
+            document.getElementById('difficultyBadge').textContent = challenge.difficulty;
+            document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${challenge.difficulty}`;
+            document.getElementById('challengeDescription').textContent = challenge.description;
+            
+            // Load examples
+            const examplesSection = document.getElementById('examplesSection');
+            examplesSection.innerHTML = '<h4 style="margin-bottom: 1rem;">Examples:</h4>';
+            
+            if (challenge.testCases && challenge.testCases.length > 0) {
+                challenge.testCases.filter(tc => !tc.isHidden).forEach((testCase, index) => {
+                    const exampleDiv = document.createElement('div');
+                    exampleDiv.className = 'example';
+                    exampleDiv.innerHTML = `
+                        <h5>Example ${index + 1}:</h5>
+                        <div><strong>Input:</strong></div>
+                        <pre>${testCase.input}</pre>
+                        <div><strong>Output:</strong></div>
+                        <pre>${testCase.expectedOutput}</pre>
+                    `;
+                    examplesSection.appendChild(exampleDiv);
+                });
+            }
+            
+            // Load starter code
+            if (codeEditor && challenge.starterCode) {
+                codeEditor.setValue(challenge.starterCode);
+            }
+            
+            // Reset timer for this challenge
+            timeRemaining = (challenge.timeLimit || 30) * 60;
+            if (timerInterval) clearInterval(timerInterval);
+            startTimer();
+        }
+
+        // Run code
+        async function runCode() {
+            if (!currentChallenge) {
+                alert('Please select a challenge first.');
+                return;
+            }
+            
+            const code = codeEditor.getValue();
+            
+            try {
+                const response = await apiRequest('/coding/run', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        code: code,
+                        challengeId: currentChallenge.id
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    analysisResults = result;
+                    showOutput(result.output || 'Code executed successfully');
+                    updateAllAnalysisTabs();
+                } else {
+                    showOutput(`Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error running code:', error);
+                showOutput('Error: Failed to run code. Please try again.', 'error');
+            }
+        }
+
+        // Submit solution
+        async function submitSolution() {
+            if (!currentChallenge) {
+                alert('Please select a challenge first.');
+                return;
+            }
+            
+            const code = codeEditor.getValue();
+            
+            try {
+                const response = await apiRequest('/coding/submit', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        code: code,
+                        challengeId: currentChallenge.id,
+                        timeSpent: ((currentChallenge.timeLimit || 30) * 60) - timeRemaining
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    analysisResults = result;
+                    if (result.success) {
+                        document.getElementById('successModal').style.display = 'flex';
+                    } else {
+                        showOutput(`Submission failed. Score: ${result.score}% (${result.passedTests}/${result.totalTests} tests passed)`, 'error');
+                        updateAllAnalysisTabs();
+                        switchTab('tests');
+                    }
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error submitting solution:', error);
+                alert('Error: Failed to submit solution. Please try again.');
+            }
+        }
+
+        // Show output in the output panel
+        function showOutput(output, type = 'success') {
+            const outputContent = document.getElementById('outputContent');
+            
+            const color = type === 'error' ? '#ef4444' : '#22c55e';
+            outputContent.innerHTML = `
+                <div style="color: ${color};">
+                    <pre style="white-space: pre-wrap; margin: 0;">${output}</pre>
+                </div>
+            `;
+            
+            switchTab('output');
+        }
+
+        // Update test results
+        function updateTestResults() {
+            const outputContent = document.getElementById('outputContent');
+            
+            if (currentTab === 'tests' && analysisResults && analysisResults.testResults) {
+                let html = '<div class="test-results">';
+                
+                const testResults = analysisResults.testResults;
+                if (testResults.length === 0) {
+                    html += '<div style="text-align: center; opacity: 0.6; margin-top: 2rem;">No test results available</div>';
+                } else {
+                    testResults.forEach((result, index) => {
+                        const statusClass = result.passed ? 'test-passed' : 'test-failed';
+                        const icon = result.passed ? 'fa-check' : 'fa-times';
+                        
+                        html += `
+                            <div class="test-result ${statusClass}">
+                                <span><i class="fas ${icon}"></i> Test Case ${index + 1}</span>
+                                <span>${result.passed ? 'PASSED' : 'FAILED'}</span>
+                            </div>
+                        `;
+                        
+                        if (!result.passed && result.error) {
+                            html += `<div style="margin-left: 1rem; margin-bottom: 0.5rem; color: #ef4444; font-size: 0.9rem;">${result.error}</div>`;
+                        }
+                        
+                        if (result.executionTime) {
+                            html += `<div style="margin-left: 1rem; margin-bottom: 0.5rem; color: #60a5fa; font-size: 0.8rem;">Execution time: ${result.executionTime.toFixed(2)}ms</div>`;
+                        }
+                    });
+                }
+                
+                html += '</div>';
+                outputContent.innerHTML = html;
+            }
+        }
+
+        // Update quality analysis tab
+        function updateQualityAnalysis() {
+            const outputContent = document.getElementById('outputContent');
+            
+            if (currentTab === 'quality' && analysisResults && analysisResults.codeQuality) {
+                const quality = analysisResults.codeQuality;
+                
+                let html = '<div style="padding: 0.5rem;">';
+                
+                // Quality Score Overview
+                html += '<div class="quality-overview">';
+                
+                const scoreClass = quality.overallScore >= 80 ? 'score-excellent' : 
+                                 quality.overallScore >= 60 ? 'score-good' : 'score-poor';
+                
+                html += `
+                    <div class="quality-score-circle ${scoreClass}">
+                        ${quality.overallScore}
+                    </div>
+                    <div class="quality-gates">
+                        <h4 style="margin-bottom: 1rem;">Quality Gates</h4>
+                `;
+                
+                if (quality.qualityGates) {
+                    Object.entries(quality.qualityGates).forEach(([gate, passed]) => {
+                        const gateClass = passed ? 'gate-passed' : 'gate-failed';
+                        const icon = passed ? 'fa-check' : 'fa-times';
+                        html += `
+                            <div class="quality-gate ${gateClass}">
+                                <span>${gate.charAt(0).toUpperCase() + gate.slice(1)}</span>
+                                <span><i class="fas ${icon}"></i> ${passed ? 'PASSED' : 'FAILED'}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += '</div></div>';
+                
+                // Quality Issues
+                if (quality.issues && quality.issues.length > 0) {
+                    html += '<div class="quality-issues"><h4>Issues Found</h4>';
+                    quality.issues.forEach(issue => {
+                        const issueClass = `issue-${issue.severity}`;
+                        html += `
+                            <div class="quality-issue ${issueClass}">
+                                <div>
+                                    <div style="font-weight: 500;">${issue.type.toUpperCase()}</div>
+                                    <div style="font-size: 0.9rem; opacity: 0.8;">${issue.message}</div>
+                                </div>
+                                <span class="suggestion-type">${issue.severity}</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                
+                // Quality Metrics
+                if (quality.metrics) {
+                    html += '<div style="margin-top: 1rem;"><h4>Code Metrics</h4>';
+                    html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem;">';
+                    
+                    Object.entries(quality.metrics).forEach(([metric, value]) => {
+                        html += `
+                            <div class="complexity-item">
+                                <div style="font-size: 0.9rem; opacity: 0.8;">${metric.replace(/([A-Z])/g, ' $1').toLowerCase()}</div>
+                                <div class="complexity-value">${value}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                }
+                
+                html += '</div>';
+                outputContent.innerHTML = html;
+            }
+        }
+
+        // Update complexity analysis tab
+        function updateComplexityAnalysis() {
+            const outputContent = document.getElementById('outputContent');
+            
+            if (currentTab === 'complexity' && analysisResults && analysisResults.complexity) {
+                const complexity = analysisResults.complexity;
+                
+                let html = '<div style="padding: 0.5rem;">';
+                
+                // Complexity Overview
+                html += `
+                    <div class="complexity-overview">
+                        <div class="complexity-item">
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Time Complexity</div>
+                            <div class="complexity-value">${complexity.timeComplexity}</div>
+                        </div>
+                        <div class="complexity-item">
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Space Complexity</div>
+                            <div class="complexity-value">${complexity.spaceComplexity}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Complexity Score
+                if (complexity.score !== undefined) {
+                    const scoreClass = complexity.score >= 80 ? 'score-excellent' : 
+                                     complexity.score >= 60 ? 'score-good' : 'score-poor';
+                    html += `
+                        <div style="text-align: center; margin: 1rem 0;">
+                            <div class="quality-score-circle ${scoreClass}" style="margin: 0 auto;">
+                                ${complexity.score}
+                            </div>
+                            <div style="margin-top: 0.5rem; opacity: 0.8;">Complexity Score</div>
+                        </div>
+                    `;
+                }
+                
+                // Analysis Details
+                if (complexity.analysis && complexity.analysis.length > 0) {
+                    html += '<div><h4>Analysis</h4>';
+                    complexity.analysis.forEach(analysis => {
+                        html += `<div style="background: rgba(255, 255, 255, 0.05); padding: 0.5rem; margin: 0.5rem 0; border-radius: 4px;">${analysis}</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Recommendations
+                if (complexity.recommendations && complexity.recommendations.length > 0) {
+                    html += '<div style="margin-top: 1rem;"><h4>Recommendations</h4>';
+                    complexity.recommendations.forEach(rec => {
+                        html += `<div style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding: 0.5rem; margin: 0.5rem 0; border-radius: 4px;">${rec}</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                outputContent.innerHTML = html;
+            }
+        }
+
+        // Update suggestions tab
+        function updateSuggestions() {
+            const outputContent = document.getElementById('outputContent');
+            
+            if (currentTab === 'suggestions' && analysisResults && analysisResults.suggestions) {
+                const suggestions = analysisResults.suggestions;
+                
+                let html = '<div style="padding: 0.5rem;">';
+                
+                if (suggestions.length === 0) {
+                    html += '<div style="text-align: center; opacity: 0.6; margin-top: 2rem;">No suggestions available</div>';
+                } else {
+                    suggestions.forEach(suggestion => {
+                        const priorityClass = `suggestion-${suggestion.priority}`;
+                        html += `
+                            <div class="suggestion-item ${priorityClass}">
+                                <div class="suggestion-header">
+                                    <h5 style="margin: 0;">${suggestion.message}</h5>
+                                    <div>
+                                        <span class="suggestion-type">${suggestion.type}</span>
+                                        <span style="margin-left: 0.5rem; font-size: 0.8rem; opacity: 0.7;">${suggestion.priority} priority</span>
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">${suggestion.details}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += '</div>';
+                outputContent.innerHTML = html;
+            }
+        }
+
+        // Update unit tests tab (for generated tests display)
+        function updateUnitTests() {
+            const outputContent = document.getElementById('outputContent');
+            
+            if (currentTab === 'unittests' && analysisResults && analysisResults.unitTests) {
+                const unitTests = analysisResults.unitTests;
+                
+                let html = '<div style="padding: 0.5rem;">';
+                
+                if (unitTests.length === 0) {
+                    html += '<div style="text-align: center; opacity: 0.6; margin-top: 2rem;">No unit tests generated</div>';
+                } else {
+                    html += '<div style="margin-bottom: 1rem; opacity: 0.8;">Generated unit tests for your code:</div>';
+                    
+                    unitTests.forEach(test => {
+                        html += `
+                            <div class="unit-test-item">
+                                <h5 style="margin: 0 0 0.5rem 0;">${test.description}</h5>
+                                <div class="unit-test-code">${test.testCode}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += '</div>';
+                outputContent.innerHTML = html;
+            }
+        }
+
+        // Update all analysis tabs
+        function updateAllAnalysisTabs() {
+            updateTestResults();
+            updateQualityAnalysis();
+            updateComplexityAnalysis();
+            updateSuggestions();
+            updateUnitTests();
+        }
+
+        // Switch output tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab appearance
+            document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+            
+            const tabIndex = ['output', 'tests', 'quality', 'complexity', 'suggestions'].indexOf(tab) + 1;
+            const tabElement = document.querySelector(`.output-tab:nth-child(${tabIndex})`);
+            if (tabElement) {
+                tabElement.classList.add('active');
+            }
+            
+            // Update content based on tab
+            switch(tab) {
+                case 'tests':
+                    updateTestResults();
+                    break;
+                case 'quality':
+                    updateQualityAnalysis();
+                    break;
+                case 'complexity':
+                    updateComplexityAnalysis();
+                    break;
+                case 'suggestions':
+                    updateSuggestions();
+                    break;
+                case 'unittests':
+                    updateUnitTests();
+                    break;
+                default:
+                    // Keep current output content for 'output' tab
+                    break;
+            }
+        }
+
+        // Reset code to starter code
+        function resetCode() {
+            if (currentChallenge && currentChallenge.starterCode) {
+                codeEditor.setValue(currentChallenge.starterCode);
+            }
+        }
+
+        // Next challenge
+        function nextChallenge() {
+            closeSuccessModal();
+            // TODO: Load next challenge or return to challenge list
+            loadChallenges();
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChallenges();
+        });
+
+        // Prevent accidental page close
+        window.addEventListener('beforeunload', function(e) {
+            if (currentChallenge && timerInterval) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

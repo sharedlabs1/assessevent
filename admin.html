@@ -980,7 +980,10 @@
 
     <script>
         // API Configuration
-        const API_BASE_URL = 'http://localhost:3000/api';
+        // Production-ready API base URL
+        const API_BASE_URL = window.location.hostname === 'events.learnlytica.in' 
+            ? 'https://events.learnlytica.in/api'
+            : '/api';
         let authToken = localStorage.getItem('adminToken');
         let currentPage = 'dashboard';
 
@@ -1110,7 +1113,7 @@
             try {
                 showAlert('loginAlert', 'Step 1: Testing server connectivity...', 'info');
                 
-                const pingResponse = await fetch('http://localhost:3000/api/health', {
+                const pingResponse = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
                     cache: 'no-cache'
                 });
@@ -1152,7 +1155,7 @@
             try {
                 console.log('🔍 Checking server status...');
                 
-                const response = await fetch('http://localhost:3000/api/health', {
+                const response = await fetch(`${API_BASE_URL}/health`, {
                     method: 'GET',
                     cache: 'no-cache'
                 });
@@ -3145,30 +3148,31 @@ python,Python Fundamentals,How to print?,print(),echo(),write(),display(),0
         window.debugLogin = debugLogin;
         window.checkServerStatus = checkServerStatus;
         
-        // Global API test function for browser console
+        // Global API test function for browser console - Production Ready
         window.testAPI = async function() {
             console.log('🧪 Starting comprehensive API test...');
             
             try {
-                // Test health endpoint
+                // Test health endpoint using production URL
                 console.log('🔍 Testing health endpoint...');
-                const health = await fetch('http://localhost:3000/api/health');
+                const healthUrl = window.location.hostname === 'events.learnlytica.in' 
+                    ? 'https://events.learnlytica.in/api/health'
+                    : '/api/health';
+                const health = await fetch(healthUrl);
                 const healthData = await health.json();
                 console.log('✅ Health:', healthData);
                 
-                // Test login
+                // Test login using apiRequest (which handles production URL properly)
                 console.log('🔑 Testing login...');
-                const login = await fetch('http://localhost:3000/api/admin/login', {
+                const loginData = await apiRequest('/admin/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: 'admin', password: 'ltimindtree2024' })
+                    body: { username: 'admin', password: 'ltimindtree2024' }
                 });
-                const loginData = await login.json();
                 console.log('✅ Login:', loginData);
                 
                 if (loginData.token) {
-                    authToken = loginData.token;
-                    localStorage.setItem('adminToken', authToken);
+                    // Update token for subsequent requests
+                    tokenManager.setToken(loginData.token);
                     
                     // Test quizzes endpoint
                     console.log('📚 Testing quizzes endpoint...');
@@ -3238,10 +3242,40 @@ python,Python Fundamentals,How to print?,print(),echo(),write(),display(),0
             }
         };
         
+        // Diagnostic function for results endpoints
+        window.testResultsEndpoint = async function() {
+            console.log('🔍 Testing /api/results endpoint specifically...');
+            
+            try {
+                // Test /api/results endpoint
+                console.log('🧪 Testing /api/results...');
+                const resultsResponse = await apiRequest('/results');
+                console.log('✅ /api/results successful:', resultsResponse);
+            } catch (error) {
+                console.error('❌ /api/results failed:', error);
+                console.error('Error details:', error.message);
+            }
+            
+            try {
+                // Test /api/results/recent endpoint
+                console.log('🧪 Testing /api/results/recent...');
+                const recentResponse = await apiRequest('/results/recent');
+                console.log('✅ /api/results/recent successful:', recentResponse);
+            } catch (error) {
+                console.error('❌ /api/results/recent failed:', error);
+                console.error('Error details:', error.message);
+            }
+            
+            // Check server logs in browser console
+            console.log('💡 Tip: Check your server terminal for detailed error messages');
+            console.log('💡 Also run: checkServerStatus() to verify server health');
+        };
+        
         console.log('🔧 Admin interface loaded. Available functions:');
         console.log('- testAPI() - Test all API endpoints');
         console.log('- debugLogin() - Debug login process');
         console.log('- checkServerStatus() - Check server connectivity');
+        console.log('- testResultsEndpoint() - Test results endpoints specifically');
     </script>
 </body>
 </html>

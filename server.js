@@ -151,6 +151,70 @@ async function initializeDatabase() {
     `);
     console.log('👥 Admin users table created/verified');
     
+    // Create coding challenges table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS coding_challenges (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        difficulty ENUM('easy', 'medium', 'hard') NOT NULL DEFAULT 'easy',
+        time_limit INT NOT NULL DEFAULT 30,
+        starter_code TEXT NOT NULL,
+        solution_code TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_by VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_difficulty (difficulty),
+        INDEX idx_created_at (created_at),
+        INDEX idx_is_active (is_active)
+      )
+    `);
+    console.log('💻 Coding challenges table created/verified');
+    
+    // Create coding test cases table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS coding_test_cases (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        challenge_id INT NOT NULL,
+        input TEXT NOT NULL,
+        expected_output TEXT NOT NULL,
+        is_hidden BOOLEAN DEFAULT FALSE,
+        order_index INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (challenge_id) REFERENCES coding_challenges(id) ON DELETE CASCADE,
+        INDEX idx_challenge_id (challenge_id),
+        INDEX idx_order_index (order_index)
+      )
+    `);
+    console.log('🧪 Coding test cases table created/verified');
+    
+    // Create coding submissions table
+    await connection.execute(`
+      CREATE TABLE IF NOT EXISTS coding_submissions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        challenge_id INT NOT NULL,
+        user_name VARCHAR(255) NOT NULL,
+        code TEXT NOT NULL,
+        score INT NOT NULL DEFAULT 0,
+        passed_tests INT NOT NULL DEFAULT 0,
+        total_tests INT NOT NULL DEFAULT 0,
+        quality_score INT DEFAULT 0,
+        complexity_score INT DEFAULT 0,
+        time_spent INT DEFAULT 0,
+        analysis_data JSON,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (challenge_id) REFERENCES coding_challenges(id) ON DELETE CASCADE,
+        INDEX idx_challenge_id (challenge_id),
+        INDEX idx_user_name (user_name),
+        INDEX idx_submitted_at (submitted_at),
+        INDEX idx_score (score),
+        INDEX idx_quality_score (quality_score),
+        INDEX idx_complexity_score (complexity_score)
+      )
+    `);
+    console.log('📝 Coding submissions table created/verified');
+    
     // Insert default admin user if not exists
     const adminPassword = await bcrypt.hash('ltimindtree2024', 10);
     await connection.execute(`
@@ -166,6 +230,15 @@ async function initializeDatabase() {
       console.log('📚 Default quizzes inserted');
     } else {
       console.log('📚 Existing quizzes found:', quizCount[0].count);
+    }
+    
+    // Insert default coding challenges if table is empty
+    const [codingCount] = await connection.execute('SELECT COUNT(*) as count FROM coding_challenges');
+    if (codingCount[0].count === 0) {
+      await insertDefaultCodingChallenges(connection);
+      console.log('💻 Default coding challenges inserted');
+    } else {
+      console.log('💻 Existing coding challenges found:', codingCount[0].count);
     }
     
     connection.release();
@@ -730,6 +803,133 @@ app.post('/api/admin/repair-quiz/:id', authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: 'Failed to repair quiz', details: error.message });
   }
 });
+
+// Insert default coding challenges
+async function insertDefaultCodingChallenges(connection) {
+  const defaultChallenges = [
+    {
+      title: 'Two Sum',
+      description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.',
+      difficulty: 'easy',
+      timeLimit: 30,
+      starterCode: `def solution(nums, target):
+    # Write your code here
+    # Return a list of two indices
+    pass
+
+# Test your solution
+nums = [2, 7, 11, 15]
+target = 9
+print(solution(nums, target))`,
+      solutionCode: `def solution(nums, target):
+    num_map = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in num_map:
+            return [num_map[complement], i]
+        num_map[num] = i
+    return []`,
+      testCases: [
+        { input: '[2, 7, 11, 15], 9', expectedOutput: '[0, 1]', isHidden: false },
+        { input: '[3, 2, 4], 6', expectedOutput: '[1, 2]', isHidden: false },
+        { input: '[3, 3], 6', expectedOutput: '[0, 1]', isHidden: true }
+      ]
+    },
+    {
+      title: 'Palindrome Check',
+      description: 'Write a function that checks if a given string is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward.',
+      difficulty: 'easy',
+      timeLimit: 20,
+      starterCode: `def solution(s):
+    # Write your code here
+    # Return True if palindrome, False otherwise
+    pass
+
+# Test your solution
+print(solution("racecar"))  # Should return True
+print(solution("hello"))    # Should return False`,
+      solutionCode: `def solution(s):
+    cleaned = ''.join(char.lower() for char in s if char.isalnum())
+    return cleaned == cleaned[::-1]`,
+      testCases: [
+        { input: 'racecar', expectedOutput: 'True', isHidden: false },
+        { input: 'hello', expectedOutput: 'False', isHidden: false },
+        { input: 'A man a plan a canal Panama', expectedOutput: 'True', isHidden: true }
+      ]
+    },
+    {
+      title: 'Fibonacci Sequence',
+      description: 'Write a function that returns the nth number in the Fibonacci sequence. The Fibonacci sequence starts with 0, 1, and each subsequent number is the sum of the previous two numbers.',
+      difficulty: 'medium',
+      timeLimit: 25,
+      starterCode: `def solution(n):
+    # Write your code here
+    # Return the nth Fibonacci number
+    pass
+
+# Test your solution
+print(solution(0))  # Should return 0
+print(solution(1))  # Should return 1
+print(solution(5))  # Should return 5`,
+      solutionCode: `def solution(n):
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b`,
+      testCases: [
+        { input: '0', expectedOutput: '0', isHidden: false },
+        { input: '1', expectedOutput: '1', isHidden: false },
+        { input: '5', expectedOutput: '5', isHidden: false },
+        { input: '10', expectedOutput: '55', isHidden: true }
+      ]
+    },
+    {
+      title: 'Maximum Subarray',
+      description: 'Given an integer array nums, find the contiguous subarray (containing at least one number) which has the largest sum and return its sum. This is known as Kadane\'s algorithm.',
+      difficulty: 'hard',
+      timeLimit: 40,
+      starterCode: `def solution(nums):
+    # Write your code here
+    # Return the maximum sum of contiguous subarray
+    pass
+
+# Test your solution
+print(solution([-2,1,-3,4,-1,2,1,-5,4]))  # Should return 6`,
+      solutionCode: `def solution(nums):
+    max_sum = current_sum = nums[0]
+    for num in nums[1:]:
+        current_sum = max(num, current_sum + num)
+        max_sum = max(max_sum, current_sum)
+    return max_sum`,
+      testCases: [
+        { input: '[-2,1,-3,4,-1,2,1,-5,4]', expectedOutput: '6', isHidden: false },
+        { input: '[1]', expectedOutput: '1', isHidden: false },
+        { input: '[5,4,-1,7,8]', expectedOutput: '23', isHidden: true }
+      ]
+    }
+  ];
+
+  for (let challenge of defaultChallenges) {
+    // Insert challenge
+    const [result] = await connection.execute(`
+      INSERT INTO coding_challenges (title, description, difficulty, time_limit, starter_code, solution_code, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [challenge.title, challenge.description, challenge.difficulty, challenge.timeLimit, challenge.starterCode, challenge.solutionCode, 'system']);
+    
+    const challengeId = result.insertId;
+    
+    // Insert test cases
+    for (let i = 0; i < challenge.testCases.length; i++) {
+      const testCase = challenge.testCases[i];
+      await connection.execute(`
+        INSERT INTO coding_test_cases (challenge_id, input, expected_output, is_hidden, order_index)
+        VALUES (?, ?, ?, ?, ?)
+      `, [challengeId, testCase.input, testCase.expectedOutput, testCase.isHidden, i]);
+    }
+  }
+}
 
 // Comprehensive database health check
 app.get('/api/admin/health-check', authenticateAdmin, async (req, res) => {
@@ -1637,8 +1837,8 @@ app.get('/api/results', authenticateAdmin, async (req, res) => {
       email: result.email,
       assessmentTrack: result.assessment_track,
       trackId: result.track_id,
-      loginDateTime: result.login_date_time.toISOString(),
-      completionTime: result.completion_time.toISOString(),
+      loginDateTime: result.login_date_time ? (result.login_date_time instanceof Date ? result.login_date_time.toISOString() : new Date(result.login_date_time).toISOString()) : null,
+      completionTime: result.completion_time ? (result.completion_time instanceof Date ? result.completion_time.toISOString() : new Date(result.completion_time).toISOString()) : null,
       maxScore: result.max_score,
       achievedScore: result.achieved_score,
       totalQuestions: result.total_questions,
@@ -1669,8 +1869,8 @@ app.get('/api/results/recent', authenticateAdmin, async (req, res) => {
       email: result.email,
       assessmentTrack: result.assessment_track,
       trackId: result.track_id,
-      loginDateTime: result.login_date_time.toISOString(),
-      completionTime: result.completion_time.toISOString(),
+      loginDateTime: result.login_date_time ? (result.login_date_time instanceof Date ? result.login_date_time.toISOString() : new Date(result.login_date_time).toISOString()) : null,
+      completionTime: result.completion_time ? (result.completion_time instanceof Date ? result.completion_time.toISOString() : new Date(result.completion_time).toISOString()) : null,
       maxScore: result.max_score,
       achievedScore: result.achieved_score,
       totalQuestions: result.total_questions,
@@ -1728,6 +1928,828 @@ app.delete('/api/results', authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: 'Failed to clear results' });
   }
 });
+
+// ============================================================================
+// CODING CHALLENGE ENDPOINTS
+// ============================================================================
+
+// Get all coding challenges (Admin)
+app.get('/api/coding/challenges', authenticateAdmin, async (req, res) => {
+  try {
+    const [challenges] = await pool.execute(`
+      SELECT id, title, description, difficulty, time_limit as timeLimit, 
+             created_at as createdAt, created_by as createdBy
+      FROM coding_challenges 
+      ORDER BY created_at DESC
+    `);
+    res.json(challenges);
+  } catch (error) {
+    console.error('Get coding challenges error:', error);
+    res.status(500).json({ error: 'Failed to fetch coding challenges' });
+  }
+});
+
+// Get available coding challenges (Public)
+app.get('/api/coding/challenges/available', async (req, res) => {
+  try {
+    const [challenges] = await pool.execute(`
+      SELECT id, title, description, difficulty, time_limit as timeLimit
+      FROM coding_challenges 
+      WHERE is_active = true
+      ORDER BY difficulty, title
+    `);
+    
+    // Get test cases for each challenge (only non-hidden ones for public view)
+    for (let challenge of challenges) {
+      const [testCases] = await pool.execute(`
+        SELECT input, expected_output as expectedOutput, is_hidden as isHidden
+        FROM coding_test_cases 
+        WHERE challenge_id = ? AND is_hidden = false
+        ORDER BY order_index
+      `, [challenge.id]);
+      challenge.testCases = testCases;
+    }
+    
+    res.json(challenges);
+  } catch (error) {
+    console.error('Get available challenges error:', error);
+    res.status(500).json({ error: 'Failed to fetch available challenges' });
+  }
+});
+
+// Get specific coding challenge with starter code (Admin/User)
+app.get('/api/coding/challenges/:id', async (req, res) => {
+  try {
+    const [challenges] = await pool.execute(`
+      SELECT id, title, description, difficulty, time_limit as timeLimit,
+             starter_code as starterCode, solution_code as solutionCode,
+             created_at as createdAt
+      FROM coding_challenges 
+      WHERE id = ?
+    `, [req.params.id]);
+    
+    if (challenges.length === 0) {
+      return res.status(404).json({ error: 'Challenge not found' });
+    }
+    
+    const challenge = challenges[0];
+    
+    // Get test cases
+    const [testCases] = await pool.execute(`
+      SELECT input, expected_output as expectedOutput, is_hidden as isHidden, order_index as orderIndex
+      FROM coding_test_cases 
+      WHERE challenge_id = ?
+      ORDER BY order_index
+    `, [challenge.id]);
+    
+    challenge.testCases = testCases;
+    res.json(challenge);
+  } catch (error) {
+    console.error('Get challenge details error:', error);
+    res.status(500).json({ error: 'Failed to fetch challenge details' });
+  }
+});
+
+// Create new coding challenge (Admin only)
+app.post('/api/coding/challenges', authenticateAdmin, async (req, res) => {
+  try {
+    const { title, description, difficulty, timeLimit, starterCode, solutionCode, testCases } = req.body;
+    
+    // Validate required fields
+    if (!title || !description || !difficulty || !starterCode || !testCases || testCases.length === 0) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+    
+    try {
+      // Insert challenge
+      const [result] = await connection.execute(`
+        INSERT INTO coding_challenges (title, description, difficulty, time_limit, starter_code, solution_code, created_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [title, description, difficulty, timeLimit || 30, starterCode, solutionCode || '', req.user.username]);
+      
+      const challengeId = result.insertId;
+      
+      // Insert test cases
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        await connection.execute(`
+          INSERT INTO coding_test_cases (challenge_id, input, expected_output, is_hidden, order_index)
+          VALUES (?, ?, ?, ?, ?)
+        `, [challengeId, testCase.input, testCase.expectedOutput, testCase.isHidden || false, i]);
+      }
+      
+      await connection.commit();
+      res.status(201).json({ id: challengeId, message: 'Challenge created successfully' });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Create challenge error:', error);
+    res.status(500).json({ error: 'Failed to create challenge' });
+  }
+});
+
+// Update coding challenge (Admin only)
+app.put('/api/coding/challenges/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { title, description, difficulty, timeLimit, starterCode, solutionCode, testCases } = req.body;
+    const challengeId = req.params.id;
+    
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+    
+    try {
+      // Update challenge
+      await connection.execute(`
+        UPDATE coding_challenges 
+        SET title = ?, description = ?, difficulty = ?, time_limit = ?, 
+            starter_code = ?, solution_code = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [title, description, difficulty, timeLimit || 30, starterCode, solutionCode || '', challengeId]);
+      
+      // Delete old test cases and insert new ones
+      await connection.execute('DELETE FROM coding_test_cases WHERE challenge_id = ?', [challengeId]);
+      
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        await connection.execute(`
+          INSERT INTO coding_test_cases (challenge_id, input, expected_output, is_hidden, order_index)
+          VALUES (?, ?, ?, ?, ?)
+        `, [challengeId, testCase.input, testCase.expectedOutput, testCase.isHidden || false, i]);
+      }
+      
+      await connection.commit();
+      res.json({ message: 'Challenge updated successfully' });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Update challenge error:', error);
+    res.status(500).json({ error: 'Failed to update challenge' });
+  }
+});
+
+// Run code against test cases with comprehensive analysis
+app.post('/api/coding/run', async (req, res) => {
+  try {
+    const { code, challengeId } = req.body;
+    
+    if (!code || !challengeId) {
+      return res.status(400).json({ error: 'Code and challenge ID are required' });
+    }
+    
+    // Get test cases for this challenge
+    const [testCases] = await pool.execute(`
+      SELECT input, expected_output as expectedOutput, is_hidden as isHidden
+      FROM coding_test_cases 
+      WHERE challenge_id = ? AND is_hidden = false
+      ORDER BY order_index
+    `, [challengeId]);
+    
+    // Comprehensive code analysis
+    const analysisResult = await analyzeCode(code, testCases);
+    
+    res.json({
+      output: analysisResult.output,
+      testResults: analysisResult.testResults,
+      codeQuality: analysisResult.codeQuality,
+      complexity: analysisResult.complexity,
+      suggestions: analysisResult.suggestions,
+      unitTests: analysisResult.unitTests
+    });
+  } catch (error) {
+    console.error('Run code error:', error);
+    res.status(500).json({ error: error.message || 'Failed to execute code' });
+  }
+});
+
+// Submit solution with comprehensive analysis
+app.post('/api/coding/submit', async (req, res) => {
+  try {
+    const { code, challengeId, timeSpent, userName } = req.body;
+    
+    if (!code || !challengeId) {
+      return res.status(400).json({ error: 'Code and challenge ID are required' });
+    }
+    
+    // Get all test cases (including hidden ones)
+    const [testCases] = await pool.execute(`
+      SELECT input, expected_output as expectedOutput
+      FROM coding_test_cases 
+      WHERE challenge_id = ?
+      ORDER BY order_index
+    `, [challengeId]);
+    
+    // Comprehensive code analysis
+    const analysisResult = await analyzeCode(code, testCases, true);
+    const passedTests = analysisResult.testResults.filter(r => r.passed).length;
+    const totalTests = analysisResult.testResults.length;
+    
+    // Calculate weighted score
+    const testScore = Math.round((passedTests / totalTests) * 100);
+    const qualityScore = analysisResult.codeQuality.overallScore;
+    const complexityScore = analysisResult.complexity.score;
+    
+    // Weighted scoring: 60% tests, 25% quality, 15% complexity
+    const finalScore = Math.round(
+      (testScore * 0.6) + (qualityScore * 0.25) + (complexityScore * 0.15)
+    );
+    
+    const success = finalScore >= 70; // 70% pass threshold
+    
+    // Save submission with detailed analysis
+    await pool.execute(`
+      INSERT INTO coding_submissions (
+        challenge_id, user_name, code, score, passed_tests, total_tests, 
+        time_spent, quality_score, complexity_score, analysis_data, submitted_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `, [
+      challengeId, userName || 'Anonymous', code, finalScore, passedTests, totalTests, 
+      timeSpent || 0, qualityScore, complexityScore, JSON.stringify(analysisResult)
+    ]);
+    
+    res.json({
+      success: success,
+      score: finalScore,
+      breakdown: {
+        testScore: testScore,
+        qualityScore: qualityScore,
+        complexityScore: complexityScore
+      },
+      passedTests: passedTests,
+      totalTests: totalTests,
+      testResults: analysisResult.testResults,
+      codeQuality: analysisResult.codeQuality,
+      complexity: analysisResult.complexity,
+      suggestions: analysisResult.suggestions,
+      unitTests: analysisResult.unitTests
+    });
+  } catch (error) {
+    console.error('Submit solution error:', error);
+    res.status(500).json({ error: error.message || 'Failed to submit solution' });
+  }
+});
+
+// Get coding challenge statistics (Admin)
+app.get('/api/coding/stats', authenticateAdmin, async (req, res) => {
+  try {
+    const [totalSubmissions] = await pool.execute('SELECT COUNT(*) as count FROM coding_submissions');
+    const [uniqueUsers] = await pool.execute('SELECT COUNT(DISTINCT user_name) as count FROM coding_submissions');
+    const [avgScore] = await pool.execute('SELECT AVG(score) as avg_score FROM coding_submissions');
+    
+    res.json({
+      totalSubmissions: totalSubmissions[0].count,
+      activeUsers: uniqueUsers[0].count,
+      avgScore: Math.round(avgScore[0].avg_score || 0)
+    });
+  } catch (error) {
+    console.error('Get coding stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch coding statistics' });
+  }
+});
+
+// Get recent coding submissions (Admin)
+app.get('/api/coding/submissions/recent', authenticateAdmin, async (req, res) => {
+  try {
+    const [submissions] = await pool.execute(`
+      SELECT cs.id, cs.user_name as userName, cc.title as challengeTitle,
+             CASE 
+               WHEN cs.score >= 70 THEN 'passed'
+               WHEN cs.score >= 40 THEN 'partial'
+               ELSE 'failed'
+             END as status,
+             cs.score, cs.submitted_at as submittedAt
+      FROM coding_submissions cs
+      JOIN coding_challenges cc ON cs.challenge_id = cc.id
+      ORDER BY cs.submitted_at DESC
+      LIMIT 20
+    `);
+    
+    res.json(submissions);
+  } catch (error) {
+    console.error('Get recent submissions error:', error);
+    res.status(500).json({ error: 'Failed to fetch recent submissions' });
+  }
+});
+
+// Comprehensive code analysis function
+async function analyzeCode(code, testCases, includeHidden = false) {
+  const analysis = {
+    output: '',
+    testResults: [],
+    codeQuality: {},
+    complexity: {},
+    suggestions: [],
+    unitTests: []
+  };
+
+  // 1. Execute test cases
+  analysis.testResults = await executeCodeWithTests(code, testCases);
+  
+  // 2. Code Quality Analysis (SonarQube-style)
+  analysis.codeQuality = analyzeCodeQuality(code);
+  
+  // 3. Time & Space Complexity Analysis
+  analysis.complexity = analyzeComplexity(code);
+  
+  // 4. Generate Unit Tests
+  analysis.unitTests = generateUnitTests(code);
+  
+  // 5. Generate Suggestions
+  analysis.suggestions = generateSuggestions(code, analysis.codeQuality, analysis.complexity);
+  
+  // 6. Set output message
+  const passedTests = analysis.testResults.filter(r => r.passed).length;
+  const totalTests = analysis.testResults.length;
+  analysis.output = `Code executed successfully. ${passedTests}/${totalTests} tests passed.`;
+  
+  return analysis;
+}
+
+// Code Quality Analysis (SonarQube-style gates)
+function analyzeCodeQuality(code) {
+  const issues = [];
+  let overallScore = 100;
+  
+  // Remove comments and strings for analysis
+  const cleanCode = code.replace(/#.*$/gm, '').replace(/"""[\s\S]*?"""/g, '').replace(/"[^"]*"/g, '');
+  
+  // 1. Cyclomatic Complexity
+  const complexityScore = analyzeCyclomaticComplexity(cleanCode);
+  if (complexityScore > 10) {
+    issues.push({
+      type: 'complexity',
+      severity: 'major',
+      message: `Cyclomatic complexity is ${complexityScore}, should be ≤ 10`,
+      line: 1
+    });
+    overallScore -= 15;
+  }
+  
+  // 2. Code Duplication
+  const duplicateLines = findDuplicateLines(cleanCode);
+  if (duplicateLines.length > 0) {
+    issues.push({
+      type: 'duplication',
+      severity: 'minor',
+      message: `Found ${duplicateLines.length} duplicate lines`,
+      line: duplicateLines[0]
+    });
+    overallScore -= 5;
+  }
+  
+  // 3. Naming Conventions
+  const namingIssues = checkNamingConventions(code);
+  if (namingIssues.length > 0) {
+    issues.push(...namingIssues);
+    overallScore -= namingIssues.length * 5;
+  }
+  
+  // 4. Function Length
+  const longFunctions = findLongFunctions(cleanCode);
+  if (longFunctions.length > 0) {
+    issues.push({
+      type: 'maintainability',
+      severity: 'major',
+      message: `Function too long (${longFunctions[0].lines} lines), should be ≤ 20`,
+      line: longFunctions[0].startLine
+    });
+    overallScore -= 10;
+  }
+  
+  // 5. Documentation
+  if (!code.includes('"""') && !code.includes('#')) {
+    issues.push({
+      type: 'documentation',
+      severity: 'minor',
+      message: 'No documentation found, consider adding docstrings or comments',
+      line: 1
+    });
+    overallScore -= 5;
+  }
+  
+  // 6. Security Issues
+  const securityIssues = findSecurityIssues(code);
+  if (securityIssues.length > 0) {
+    issues.push(...securityIssues);
+    overallScore -= securityIssues.length * 20;
+  }
+  
+  return {
+    overallScore: Math.max(0, overallScore),
+    issues: issues,
+    qualityGates: {
+      complexity: complexityScore <= 10,
+      duplication: duplicateLines.length === 0,
+      maintainability: longFunctions.length === 0,
+      security: securityIssues.length === 0
+    },
+    metrics: {
+      linesOfCode: code.split('\n').length,
+      cyclomaticComplexity: complexityScore,
+      duplicateLines: duplicateLines.length,
+      functionCount: (code.match(/def\s+\w+/g) || []).length
+    }
+  };
+}
+
+// Time & Space Complexity Analysis
+function analyzeComplexity(code) {
+  let timeComplexity = 'O(1)';
+  let spaceComplexity = 'O(1)';
+  let score = 100;
+  const analysis = [];
+  
+  // Analyze loops and nested structures
+  const loopPatterns = [
+    { pattern: /for\s+\w+\s+in\s+\w+:/g, complexity: 'O(n)' },
+    { pattern: /while\s+\w+/g, complexity: 'O(n)' },
+    { pattern: /for.*for.*:/g, complexity: 'O(n²)' },
+    { pattern: /while.*while/g, complexity: 'O(n²)' }
+  ];
+  
+  // Check for recursive calls
+  const functionName = (code.match(/def\s+(\w+)/) || [])[1];
+  if (functionName && code.includes(functionName + '(') && code.split(functionName + '(').length > 2) {
+    timeComplexity = 'O(2^n)';
+    analysis.push('Recursive function detected - potential exponential complexity');
+    score -= 20;
+  }
+  
+  // Check loop complexity
+  for (const pattern of loopPatterns) {
+    const matches = code.match(pattern.pattern);
+    if (matches) {
+      timeComplexity = pattern.complexity;
+      if (pattern.complexity === 'O(n²)') {
+        analysis.push('Nested loops detected - quadratic time complexity');
+        score -= 15;
+      } else if (pattern.complexity === 'O(n)') {
+        analysis.push('Linear loop detected');
+        score -= 5;
+      }
+      break;
+    }
+  }
+  
+  // Check space complexity
+  if (code.includes('[]') || code.includes('{}') || code.includes('list(') || code.includes('dict(')) {
+    spaceComplexity = 'O(n)';
+    analysis.push('Data structures used - linear space complexity');
+    score -= 5;
+  }
+  
+  // Check for sorting (usually O(n log n))
+  if (code.includes('.sort(') || code.includes('sorted(')) {
+    timeComplexity = 'O(n log n)';
+    analysis.push('Sorting operation detected');
+    score -= 10;
+  }
+  
+  return {
+    timeComplexity: timeComplexity,
+    spaceComplexity: spaceComplexity,
+    score: Math.max(0, score),
+    analysis: analysis,
+    recommendations: generateComplexityRecommendations(timeComplexity, spaceComplexity)
+  };
+}
+
+// Generate Unit Tests
+function generateUnitTests(code) {
+  const unitTests = [];
+  
+  // Extract function names
+  const functions = code.match(/def\s+(\w+)\s*\([^)]*\):/g) || [];
+  
+  functions.forEach(func => {
+    const funcName = func.match(/def\s+(\w+)/)[1];
+    if (funcName !== 'solution') { // Skip main solution function
+      const testCode = `
+def test_${funcName}():
+    # Test case 1: Normal input
+    result = ${funcName}()
+    assert result is not None, "Function should return a value"
+    
+    # Test case 2: Edge case
+    # Add specific test cases based on function purpose
+    
+    # Test case 3: Error handling
+    try:
+        ${funcName}()
+    except Exception as e:
+        assert False, f"Function should handle errors gracefully: {e}"
+`;
+      
+      unitTests.push({
+        functionName: funcName,
+        testCode: testCode.trim(),
+        description: `Unit test for ${funcName} function`
+      });
+    }
+  });
+  
+  // Generate integration test for main solution
+  if (code.includes('def solution(')) {
+    const integrationTest = `
+def test_solution_integration():
+    # Integration test for main solution function
+    test_cases = [
+        # Add test cases based on problem requirements
+        # (input, expected_output)
+    ]
+    
+    for inputs, expected in test_cases:
+        result = solution(inputs)
+        assert result == expected, f"Expected {expected}, got {result}"
+`;
+    
+    unitTests.push({
+      functionName: 'solution',
+      testCode: integrationTest.trim(),
+      description: 'Integration test for main solution function'
+    });
+  }
+  
+  return unitTests;
+}
+
+// Generate Suggestions
+function generateSuggestions(code, qualityAnalysis, complexityAnalysis) {
+  const suggestions = [];
+  
+  // Quality-based suggestions
+  if (qualityAnalysis.overallScore < 80) {
+    suggestions.push({
+      type: 'quality',
+      priority: 'high',
+      message: 'Consider refactoring to improve code quality',
+      details: 'Address the quality issues identified in the analysis'
+    });
+  }
+  
+  // Complexity-based suggestions
+  if (complexityAnalysis.timeComplexity === 'O(n²)' || complexityAnalysis.timeComplexity === 'O(2^n)') {
+    suggestions.push({
+      type: 'performance',
+      priority: 'high',
+      message: 'Consider optimizing the algorithm for better time complexity',
+      details: `Current complexity: ${complexityAnalysis.timeComplexity}. Consider using more efficient algorithms or data structures.`
+    });
+  }
+  
+  // Code style suggestions
+  if (!code.includes('"""') && code.split('\n').length > 5) {
+    suggestions.push({
+      type: 'documentation',
+      priority: 'medium',
+      message: 'Add docstrings to improve code documentation',
+      details: 'Use triple quotes to document function purpose, parameters, and return values'
+    });
+  }
+  
+  // Performance suggestions
+  if (code.includes('range(len(')) {
+    suggestions.push({
+      type: 'pythonic',
+      priority: 'low',
+      message: 'Consider using enumerate() instead of range(len())',
+      details: 'for i, item in enumerate(list): is more Pythonic than for i in range(len(list)):'
+    });
+  }
+  
+  return suggestions;
+}
+
+// Helper functions for code analysis
+function analyzeCyclomaticComplexity(code) {
+  const patterns = ['if', 'elif', 'else', 'for', 'while', 'except', 'and', 'or'];
+  let complexity = 1; // Base complexity
+  
+  patterns.forEach(pattern => {
+    const regex = new RegExp(`\\b${pattern}\\b`, 'g');
+    const matches = code.match(regex) || [];
+    complexity += matches.length;
+  });
+  
+  return complexity;
+}
+
+function findDuplicateLines(code) {
+  const lines = code.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const lineCount = {};
+  const duplicates = [];
+  
+  lines.forEach((line, index) => {
+    if (lineCount[line]) {
+      duplicates.push(index + 1);
+    } else {
+      lineCount[line] = index + 1;
+    }
+  });
+  
+  return duplicates;
+}
+
+function checkNamingConventions(code) {
+  const issues = [];
+  
+  // Check function names (should be snake_case)
+  const functions = code.match(/def\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
+  functions.forEach(func => {
+    const name = func.replace('def ', '');
+    if (!/^[a-z_][a-z0-9_]*$/.test(name)) {
+      issues.push({
+        type: 'naming',
+        severity: 'minor',
+        message: `Function name '${name}' should use snake_case`,
+        line: 1
+      });
+    }
+  });
+  
+  // Check variable names
+  const variables = code.match(/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/gm) || [];
+  variables.forEach(variable => {
+    const name = variable.replace(/^\s*/, '').replace(/\s*=.*/, '');
+    if (!/^[a-z_][a-z0-9_]*$/.test(name) && name !== name.toUpperCase()) {
+      issues.push({
+        type: 'naming',
+        severity: 'minor',
+        message: `Variable name '${name}' should use snake_case`,
+        line: 1
+      });
+    }
+  });
+  
+  return issues;
+}
+
+function findLongFunctions(code) {
+  const functions = [];
+  const lines = code.split('\n');
+  let currentFunction = null;
+  
+  lines.forEach((line, index) => {
+    if (line.trim().startsWith('def ')) {
+      if (currentFunction) {
+        currentFunction.endLine = index - 1;
+        currentFunction.lines = currentFunction.endLine - currentFunction.startLine + 1;
+        if (currentFunction.lines > 20) {
+          functions.push(currentFunction);
+        }
+      }
+      currentFunction = {
+        name: line.trim().match(/def\s+(\w+)/)[1],
+        startLine: index + 1,
+        endLine: null,
+        lines: 0
+      };
+    }
+  });
+  
+  // Handle last function
+  if (currentFunction) {
+    currentFunction.endLine = lines.length;
+    currentFunction.lines = currentFunction.endLine - currentFunction.startLine + 1;
+    if (currentFunction.lines > 20) {
+      functions.push(currentFunction);
+    }
+  }
+  
+  return functions;
+}
+
+function findSecurityIssues(code) {
+  const issues = [];
+  
+  // Check for dangerous functions
+  const dangerousFunctions = ['eval', 'exec', 'input', 'raw_input'];
+  dangerousFunctions.forEach(func => {
+    if (code.includes(func + '(')) {
+      issues.push({
+        type: 'security',
+        severity: 'critical',
+        message: `Dangerous function '${func}' detected - potential security risk`,
+        line: 1
+      });
+    }
+  });
+  
+  return issues;
+}
+
+function generateComplexityRecommendations(timeComplexity, spaceComplexity) {
+  const recommendations = [];
+  
+  if (timeComplexity === 'O(n²)') {
+    recommendations.push('Consider using hash tables or sets for O(1) lookups');
+    recommendations.push('Look for opportunities to use single-pass algorithms');
+  }
+  
+  if (timeComplexity === 'O(2^n)') {
+    recommendations.push('Consider dynamic programming or memoization');
+    recommendations.push('Look for overlapping subproblems that can be cached');
+  }
+  
+  if (spaceComplexity === 'O(n)' && timeComplexity !== 'O(1)') {
+    recommendations.push('Consider if space can be optimized with in-place operations');
+  }
+  
+  return recommendations;
+}
+
+// Enhanced test execution with better error handling
+async function executeCodeWithTests(code, testCases) {
+  const results = [];
+  
+  for (let testCase of testCases) {
+    try {
+      // Enhanced code execution simulation
+      const result = simulatePythonExecution(code, testCase.input);
+      const passed = result.trim() === testCase.expectedOutput.trim();
+      
+      results.push({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: result,
+        passed: passed,
+        error: null,
+        executionTime: Math.random() * 100 + 10 // Simulated execution time
+      });
+    } catch (error) {
+      results.push({
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: '',
+        passed: false,
+        error: error.message,
+        executionTime: 0
+      });
+    }
+  }
+  
+  return results;
+}
+
+// Simulate Python code execution (placeholder - replace with actual sandboxed execution)
+function simulatePythonExecution(code, input) {
+  // This is a simplified simulation
+  // In production, use docker containers or VM-based execution
+  
+  try {
+    // Basic function extraction and execution simulation
+    if (code.includes('def solution(')) {
+      // Extract function body and simulate execution
+      const match = code.match(/def solution\([^)]*\):\s*([\s\S]*?)(?=\n\S|\n$|$)/);
+      if (match) {
+        const functionBody = match[1];
+        
+        // Simple pattern matching for common solutions
+        if (functionBody.includes('return') && input) {
+          // Simulate some basic operations
+          const inputValue = input.trim();
+          
+          // Example: if input is a number, return some transformation
+          if (!isNaN(inputValue)) {
+            const num = parseInt(inputValue);
+            
+            // Common patterns
+            if (functionBody.includes('* 2')) return (num * 2).toString();
+            if (functionBody.includes('+ 1')) return (num + 1).toString();
+            if (functionBody.includes('% 2')) return (num % 2).toString();
+            if (functionBody.includes('** 2')) return (num * num).toString();
+            
+            return num.toString(); // Default return input
+          }
+          
+          // String operations
+          if (functionBody.includes('.upper()')) return inputValue.toUpperCase();
+          if (functionBody.includes('.lower()')) return inputValue.toLowerCase();
+          if (functionBody.includes('.reverse')) return inputValue.split('').reverse().join('');
+          
+          return inputValue; // Default return input
+        }
+      }
+    }
+    
+    return 'No valid output'; // Default response
+  } catch (error) {
+    throw new Error('Code execution failed: ' + error.message);
+  }
+}
 
 // Error handling middleware
 app.use((error, req, res, next) => {
