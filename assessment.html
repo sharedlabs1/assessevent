@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTIMindtree Assessment Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: calc(100vh - 40px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="0%" r="100%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><rect width="100" height="20" fill="url(%23a)"/></svg>');
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .event-info {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .event-info h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .assessment-tracks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .track-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.05), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .track-card:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        .track-card:hover {
+            transform: translateY(-5px);
+            border-color: #3498db;
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.1);
+        }
+
+        .track-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .track-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .track-card p {
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .track-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .assessment-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .question-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .question-number {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .question-timer {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            margin-bottom: 1rem;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 1.2rem;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .option-label:hover::before {
+            left: 100%;
+        }
+
+        .option-label:hover {
+            border-color: #3498db;
+            background: #f1f8ff;
+            transform: translateX(5px);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 1rem;
+            transform: scale(1.3);
+            accent-color: #3498db;
+        }
+
+        .option-text {
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .results-container {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem auto;
+            font-size: 2.5rem;
+            font-weight: 700;
+            box-shadow: 0 15px 35px rgba(40, 167, 69, 0.3);
+        }
+
+        .score-label {
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+
+        .result-message {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .result-details {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .track-specific-info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .track-specific-info h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+                min-height: calc(100vh - 20px);
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .back-button {
+                top: 1rem;
+                left: 1rem;
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .content {
+                padding: 1rem;
+            }
+            
+            .assessment-tracks {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .track-card {
+                padding: 1.5rem;
+            }
+            
+            .question-container {
+                padding: 1.5rem;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+            }
+            
+            .score-display {
+                width: 150px;
+                height: 150px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="main.html" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+            <div class="header-content">
+                <h1>Assessment Platform</h1>
+                <p>LTIMindtree Skills Evaluation System</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Login Screen -->
+            <div id="loginScreen" class="screen active">
+                <div class="login-container">
+                    <div class="event-info" id="loginEventInfo">
+                        <h3><i class="fas fa-calendar-alt"></i> Assessment Event Details</h3>
+                        <p><strong>Date:</strong> August 14th, 2025 | <strong>Time:</strong> 5:00 PM - 10:00 PM IST</p>
+                        <p>Multiple assessment tracks available | Non-proctored | LTIMindtree Associates only</p>
+                    </div>
+
+                    <h2 style="margin-bottom: 1.5rem; color: #2c3e50;">Welcome to Assessment Platform</h2>
+                    <p style="margin-bottom: 2rem; color: #6c757d;">Please enter your details to access the assessments. Only LTIMindtree email addresses are allowed.</p>
+                    
+                    <div id="loginAlert"></div>
+                    
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="userName">Full Name *</label>
+                            <input type="text" id="userName" class="form-input" required placeholder="Enter your full name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="userEmail">Email Address *</label>
+                            <input type="email" id="userEmail" class="form-input" required placeholder="yourname@ltimindtree.com">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-full">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Access Assessments
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Track Selection Screen -->
+            <div id="trackSelectionScreen" class="screen">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: #2c3e50; margin-bottom: 0.5rem;">Select Assessment Track</h2>
+                    <p style="color: #6c757d;">Welcome, <span id="welcomeUser" style="font-weight: 600; color: #3498db;"></span>!</p>
+                </div>
+                
+                <div class="assessment-tracks" id="assessmentTracks">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        Loading assessment tracks...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Screen -->
+            <div id="assessmentScreen" class="screen">
+                <div class="assessment-container">
+                    <div class="question-container">
+                        <div class="question-header">
+                            <div class="question-number" id="questionNumber">Question 1 of 10</div>
+                            <div class="question-timer" id="questionTimer">
+                                <i class="fas fa-clock"></i>
+                                <span>00:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        
+                        <div class="question-text" id="questionText"></div>
+                        
+                        <ul class="options" id="questionOptions"></ul>
+                        
+                        <div class="navigation-buttons">
+                            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">
+                                <i class="fas fa-chevron-left"></i>
+                                Previous
+                            </button>
+                            <div></div>
+                            <button class="btn" id="nextBtn" onclick="nextQuestion()">
+                                Next
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <button class="btn btn-success" id="submitBtn" onclick="submitAssessment()" style="display: none;">
+                                <i class="fas fa-check"></i>
+                                Submit Assessment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="resultsScreen" class="screen">
+                <div class="results-container">
+                    <h2 style="color: #2c3e50; margin-bottom: 2rem;">Assessment Completed!</h2>
+                    
+                    <div class="score-display" id="scoreDisplay">
+                        <div>0/0</div>
+                        <div class="score-label">Score</div>
+                    </div>
+                    
+                    <h3 class="result-message" id="resultMessage"></h3>
+                    <p class="result-details" id="resultDetails"></p>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+                        <button class="btn" onclick="backToTracks()">
+                            <i class="fas fa-redo"></i>
+                            Take Another Assessment
+                        </button>
+                        <button class="btn btn-secondary" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+        
+        // Global variables
+        let currentUser = null;
+        let currentTrack = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let startTime = null;
+        let loginTime = null;
+        let timerInterval = null;
+        let autoStartTrack = null;
+        let assessmentTracks = {};
+
+        // API Helper functions
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            const config = { ...defaultOptions, ...options };
+            if (config.body && typeof config.body === 'object') {
+                config.body = JSON.stringify(config.body);
+            }
+            
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAssessmentTracks();
+            
+            // Check for auto-start track parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const trackParam = urlParams.get('track');
+            if (trackParam && assessmentTracks[trackParam]) {
+                autoStartTrack = trackParam;
+                showTrackSpecificLogin();
+            }
+        });
+
+        // Load assessment tracks from API
+        async function loadAssessmentTracks() {
+            try {
+                assessmentTracks = await apiRequest('/quizzes');
+                console.log('Assessment tracks loaded successfully');
+                console.log('📊 Loaded tracks:', Object.keys(assessmentTracks));
+                
+                // Debug each track's question count
+                Object.entries(assessmentTracks).forEach(([trackId, track]) => {
+                    console.log(`🔍 Track ${trackId}: ${track.name} - ${track.questions?.length || 0} questions`);
+                    if (track.questions && track.questions.length > 0) {
+                        console.log(`  First question: ${track.questions[0]?.question || 'No question text'}`);
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to load assessment tracks:', error);
+                // Fallback to default tracks if API fails
+                assessmentTracks = getDefaultTracks();
+            }
+        }
+
+        // Default tracks fallback
+        function getDefaultTracks() {
+            return {
+                'javascript': {
+                    name: 'JavaScript Fundamentals',
+                    description: 'Test your knowledge of JavaScript basics and ES6+ features',
+                    questions: [
+                        {
+                            question: 'What is the correct way to declare a variable in JavaScript?',
+                            options: ['var myVar = 5;', 'variable myVar = 5;', 'v myVar = 5;', 'declare myVar = 5;'],
+                            correct: 0
+                        },
+                        {
+                            question: 'Which method is used to add an element to the end of an array?',
+                            options: ['append()', 'push()', 'add()', 'insert()'],
+                            correct: 1
+                        }
+                    ],
+                    pointsPerQuestion: 1
+                }
+            };
+        }
+
+        // Show track-specific login screen
+        function showTrackSpecificLogin() {
+            const trackInfo = assessmentTracks[autoStartTrack];
+            console.log('🎯 Showing track-specific login for:', autoStartTrack);
+            console.log('📊 Available tracks:', Object.keys(assessmentTracks));
+            console.log('🔍 Track info found:', trackInfo);
+            
+            if (!trackInfo) {
+                document.getElementById('loginEventInfo').innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> Track Not Found</h3>
+                    <p><strong>Requested Track:</strong> ${autoStartTrack}</p>
+                    <p><strong>Available Tracks:</strong> ${Object.keys(assessmentTracks).join(', ')}</p>
+                    <p>Please check the track name in the URL or select from available tracks.</p>
+                `;
+                return;
+            }
+            
+            const questionCount = trackInfo.questions ? trackInfo.questions.length : 0;
+            const pointsPerQuestion = trackInfo.pointsPerQuestion || 1;
+            const totalPoints = questionCount * pointsPerQuestion;
+            
+            document.getElementById('loginEventInfo').innerHTML = `
+                <h3><i class="fas fa-bullseye"></i> Direct Assessment Access</h3>
+                <p><strong>Assessment:</strong> ${trackInfo.name}</p>
+                <p><strong>Questions:</strong> ${questionCount} | <strong>Total Points:</strong> ${totalPoints}</p>
+                <p>Please login to start this assessment directly</p>
+            `;
+        }
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('userName').value.trim();
+            const email = document.getElementById('userEmail').value.trim();
+            
+            if (!validateLogin(name, email)) {
+                return;
+            }
+            
+            // Capture login time
+            loginTime = new Date();
+            currentUser = { 
+                name, 
+                email, 
+                loginTime: loginTime.toISOString()
+            };
+            
+            // If auto-start track is set, go directly to assessment
+            if (autoStartTrack) {
+                startAssessment(autoStartTrack);
+            } else {
+                showTrackSelection();
+            }
+        });
+
+        function validateLogin(name, email) {
+            const alertDiv = document.getElementById('loginAlert');
+            
+            if (!name || !email) {
+                showAlert('loginAlert', 'Please fill in all required fields.', 'error');
+                return false;
+            }
+            
+            if (!email.endsWith('@ltimindtree.com')) {
+                showAlert('loginAlert', 'Access restricted to LTIMindtree email addresses only.', 'error');
+                return false;
+            }
+            
+            return true;
+        }
+
+        function showAlert(containerId, message, type) {
+            const alertDiv = document.getElementById(containerId);
+            alertDiv.innerHTML = `<div class="alert alert-${type}"><i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showTrackSelection() {
+            document.getElementById('welcomeUser').textContent = currentUser.name;
+            populateAssessmentTracks();
+            showScreen('trackSelectionScreen');
+        }
+
+        function populateAssessmentTracks() {
+            const container = document.getElementById('assessmentTracks');
+            container.innerHTML = '';
+            
+            Object.keys(assessmentTracks).forEach(trackId => {
+                const track = assessmentTracks[trackId];
+                const trackCard = document.createElement('div');
+                trackCard.className = 'track-card';
+                trackCard.onclick = () => startAssessment(trackId);
+                
+                // Get appropriate icon based on track name
+                const icon = getTrackIcon(track.name);
+                
+                trackCard.innerHTML = `
+                    <div class="track-icon">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                    <h3>${track.name}</h3>
+                    <p>${track.description}</p>
+                    <div class="track-meta">
+                        <span><i class="fas fa-question-circle"></i> ${track.questions.length} Questions</span>
+                        <span><i class="fas fa-star"></i> ${track.questions.length * (track.pointsPerQuestion || 1)} Points</span>
+                    </div>
+                    <button class="btn btn-full">
+                        <i class="fas fa-play"></i>
+                        Start Assessment
+                    </button>
+                `;
+                
+                container.appendChild(trackCard);
+            });
+        }
+
+        function getTrackIcon(trackName) {
+            const name = trackName.toLowerCase();
+            if (name.includes('javascript') || name.includes('js')) return 'code';
+            if (name.includes('python')) return 'python';
+            if (name.includes('react')) return 'react';
+            if (name.includes('database') || name.includes('sql')) return 'database';
+            if (name.includes('security') || name.includes('cyber')) return 'shield-alt';
+            if (name.includes('cloud')) return 'cloud';
+            if (name.includes('node')) return 'node-js';
+            return 'laptop-code';
+        }
+
+        // Assessment functionality
+        function startAssessment(trackId) {
+            currentTrack = trackId;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            startTime = new Date();
+            
+            showScreen('assessmentScreen');
+            
+            // Show time limit warning
+            alert('⏰ Important: You have 10 minutes to complete this assessment. The test will auto-submit when time expires.');
+            
+            startTimer();
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const track = assessmentTracks[currentTrack];
+            const question = track.questions[currentQuestionIndex];
+            
+            document.getElementById('questionNumber').textContent = 
+                `Question ${currentQuestionIndex + 1} of ${track.questions.length}`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('questionOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <label class="option-label">
+                        <input type="radio" name="answer" value="${index}" 
+                               ${userAnswers[currentQuestionIndex] === index ? 'checked' : ''}>
+                        <span class="option-text">${option}</span>
+                    </label>
+                `;
+                optionsContainer.appendChild(li);
+            });
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex + 1) / track.questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').style.display = currentQuestionIndex === 0 ? 'none' : 'inline-flex';
+            document.getElementById('nextBtn').style.display = currentQuestionIndex === track.questions.length - 1 ? 'none' : 'inline-flex';
+            document.getElementById('submitBtn').style.display = currentQuestionIndex === track.questions.length - 1 ? 'inline-flex' : 'none';
+        }
+
+        function saveCurrentAnswer() {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (selectedOption) {
+                userAnswers[currentQuestionIndex] = parseInt(selectedOption.value);
+            }
+        }
+
+        function nextQuestion() {
+            saveCurrentAnswer();
+            if (currentQuestionIndex < assessmentTracks[currentTrack].questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            saveCurrentAnswer();
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function startTimer() {
+            // Initialize timer display to show 10:00
+            document.querySelector('#questionTimer span').textContent = '10:00 remaining';
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            const timeLimit = 10 * 60; // 10 minutes in seconds
+            const remaining = timeLimit - elapsed;
+            
+            if (remaining <= 0) {
+                // Time's up! Auto-submit the assessment
+                clearInterval(timerInterval);
+                alert('⏰ Time\'s up! Your assessment will be submitted automatically.');
+                submitAssessment();
+                return;
+            }
+            
+            const minutes = Math.floor(remaining / 60);
+            const seconds = remaining % 60;
+            
+            // Change color to red when less than 2 minutes remaining
+            const timerSpan = document.querySelector('#questionTimer span');
+            timerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`;
+            
+            if (remaining <= 120) { // Less than 2 minutes
+                timerSpan.style.color = '#ef4444';
+                timerSpan.style.fontWeight = 'bold';
+            } else if (remaining <= 300) { // Less than 5 minutes
+                timerSpan.style.color = '#f59e0b';
+                timerSpan.style.fontWeight = 'bold';
+            }
+        }
+
+        async function submitAssessment() {
+            saveCurrentAnswer();
+            clearInterval(timerInterval);
+            
+            const track = assessmentTracks[currentTrack];
+            let score = 0;
+            let totalPoints = 0;
+            
+            userAnswers.forEach((answer, index) => {
+                const question = track.questions[index];
+                const questionPoints = question.points || track.pointsPerQuestion || 1;
+                totalPoints += questionPoints;
+                
+                if (answer === question.correct) {
+                    score += questionPoints;
+                }
+            });
+            
+            const endTime = new Date();
+            const duration = Math.floor((endTime - startTime) / 1000);
+            
+            // Save result to database
+            try {
+                await apiRequest('/results', {
+                    method: 'POST',
+                    body: {
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        assessmentTrack: track.name,
+                        trackId: currentTrack,
+                        loginDateTime: currentUser.loginTime,
+                        completionTime: endTime.toISOString(),
+                        maxScore: totalPoints,
+                        achievedScore: score,
+                        totalQuestions: track.questions.length,
+                        duration: duration,
+                        answers: userAnswers
+                    }
+                });
+                console.log('Result saved successfully');
+            } catch (error) {
+                console.error('Failed to save result:', error);
+                // Continue to show results even if save fails
+            }
+            
+            showResults(score, totalPoints, track.questions.length);
+        }
+
+        function showResults(score, totalPoints, totalQuestions) {
+            const percentage = Math.round((score / totalPoints) * 100);
+            
+            document.getElementById('scoreDisplay').innerHTML = `
+                <div>${score}/${totalPoints}</div>
+                <div class="score-label">Score</div>
+            `;
+            
+            document.getElementById('resultMessage').textContent = 
+                percentage >= 70 ? '🎉 Excellent Performance!' : 
+                percentage >= 50 ? '👍 Good Job!' : '📚 Keep Learning!';
+                
+            document.getElementById('resultDetails').textContent = 
+                `You scored ${percentage}% (${score}/${totalPoints} points) in ${assessmentTracks[currentTrack].name}`;
+            
+            showScreen('resultsScreen');
+        }
+
+        // Navigation functions
+        function backToTracks() {
+            showScreen('trackSelectionScreen');
+        }
+
+        function logout() {
+            currentUser = null;
+            currentTrack = null;
+            autoStartTrack = null;
+            
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            document.getElementById('loginForm').reset();
+            
+            // Reset to normal login screen
+            document.getElementById('loginEventInfo').innerHTML = `
+                <h3><i class="fas fa-calendar-alt"></i> Assessment Event Details</h3>
+                <p><strong>Date:</strong> August 21st, 2024 | <strong>Time:</strong> 5:00 PM - 10:00 PM IST</p>
+                <p>Multiple assessment tracks available | Non-proctored | LTIMindtree Associates only</p>
+            `;
+            
+            showScreen('loginScreen');
+        }
+    </script>
+</body>
+</html>

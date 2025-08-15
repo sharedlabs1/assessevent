@@ -1,0 +1,3247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTIMindtree Assessment Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-260px);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            color: #e2e8f0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border-right: 3px solid #3b82f6;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-right: 1rem;
+            color: #64748b;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-indicator.offline {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s ease;
+        }
+
+        .user-menu:hover {
+            background: #f1f5f9;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.blue { background: #3b82f6; }
+        .stat-icon.green { background: #10b981; }
+        .stat-icon.purple { background: #8b5cf6; }
+        .stat-icon.orange { background: #f59e0b; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-secondary { background: #6b7280; color: white; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-info { background: #06b6d4; color: white; }
+        .btn-info:hover { background: #0891b2; }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.75rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .question-builder {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8fafc;
+        }
+
+        .question-builder h4 {
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-input {
+            flex: 1;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-danger {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            font-size: 2rem;
+            color: #3b82f6;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fecaca;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-260px);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="modal active">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-shield-alt" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                    Admin Login
+                </h2>
+            </div>
+            <div class="modal-body">
+                <div id="loginAlert"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="username">Username</label>
+                        <input type="text" id="username" class="form-input" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login to Dashboard
+                    </button>
+                </form>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f1f5f9; border-radius: 0.5rem; font-size: 0.875rem; color: #64748b;">
+                    <strong>Default Credentials:</strong><br>
+                    Username: admin<br>
+                    Password: ltimindtree2024<br>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap;">
+                        <button type="button" onclick="checkServerStatus()" class="btn btn-info" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                            🔍 Check Server
+                        </button>
+                        <button type="button" onclick="debugLogin()" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                            🔧 Debug Login
+                        </button>
+                    </div>
+                    <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280;">
+                        ℹ️ If login fails, first click "Check Server" to ensure the server is running
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>LTIMindtree</h2>
+            <p>Assessment Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" onclick="showPage('dashboard')">
+                <i class="fas fa-chart-line"></i>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('quizzes')">
+                <i class="fas fa-clipboard-list"></i>
+                Quiz Management
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('results')">
+                <i class="fas fa-chart-bar"></i>
+                Results & Analytics
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('participants')">
+                <i class="fas fa-users"></i>
+                Participants
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('links')">
+                <i class="fas fa-link"></i>
+                Assessment Links
+            </a>
+            <a href="#" class="nav-item" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i>
+                Settings
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="header-title">Assessment Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator" id="connectionStatus">
+                    <i class="fas fa-circle"></i>
+                    Checking Connection...
+                </div>
+                <div class="user-menu" onclick="logout()">
+                    <i class="fas fa-user-circle" style="font-size: 1.5rem;"></i>
+                    <span>Admin</span>
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalParticipants">0</div>
+                        <div class="stat-label">Total Participants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon green">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalAssessments">0</div>
+                        <div class="stat-label">Assessments Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="totalQuizzes">0</div>
+                        <div class="stat-label">Total Quizzes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="avgScore">0%</div>
+                        <div class="stat-label">Average Score</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Activity</h3>
+                        </div>
+                        <div class="card-content">
+                            <div id="recentActivity" class="loading">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Quick Actions</h3>
+                        </div>
+                        <div class="card-content">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <button class="btn btn-primary" onclick="showCreateQuizModal()">
+                                    <i class="fas fa-plus"></i>
+                                    Create New Quiz
+                                </button>
+                                <button class="btn btn-success" onclick="exportAllResults()">
+                                    <i class="fas fa-download"></i>
+                                    Export All Results
+                                </button>
+                                <button class="btn btn-info" onclick="runHealthCheck()">
+                                    <i class="fas fa-heartbeat"></i>
+                                    System Health Check
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Management Page -->
+            <div id="quizzes" class="page-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2>Quiz Management</h2>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="showCreateQuizModal()">
+                            <i class="fas fa-plus"></i>
+                            Create New Quiz
+                        </button>
+                        <button class="btn btn-info" onclick="showUploadCSVModal()">
+                            <i class="fas fa-file-csv"></i>
+                            Upload CSV Questions
+                        </button>
+                        <button class="btn btn-success" onclick="debugAllQuizzes()">
+                            <i class="fas fa-bug"></i>
+                            Debug Quizzes
+                        </button>
+                        <button class="btn btn-warning" onclick="repairAllQuizData()">
+                            <i class="fas fa-wrench"></i>
+                            Repair All Quizzes
+                        </button>
+                        <button class="btn btn-secondary" onclick="runHealthCheck()">
+                            <i class="fas fa-heartbeat"></i>
+                            Health Check
+                        </button>
+                        <button class="btn btn-info" onclick="initializeDefaultQuizzes()">
+                            <i class="fas fa-magic"></i>
+                            Fix Default Quizzes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Quizzes</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="quizzesTable" class="loading">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results & Analytics Page -->
+            <div id="results" class="page-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Results & Analytics</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-success" onclick="exportAllResults()">
+                            <i class="fas fa-download"></i>
+                            Export All
+                        </button>
+                        <button class="btn btn-primary" onclick="exportRecentResults()">
+                            <i class="fas fa-clock"></i>
+                            Export Recent (2h)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Assessment Results</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="resultsTable" class="loading">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Page -->
+            <div id="participants" class="page-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Participants</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Participant Overview</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="participantsTable" class="loading">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Links Page -->
+            <div id="links" class="page-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Assessment Links</h2>
+                    <button class="btn btn-primary" onclick="refreshLinks()">
+                        <i class="fas fa-sync"></i>
+                        Refresh Links
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Direct Assessment Links</h3>
+                        <p style="color: #64748b; font-size: 0.875rem;">Share these links for direct access to specific assessments</p>
+                    </div>
+                    <div class="card-content">
+                        <div id="linksContainer" class="loading">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings" class="page-section">
+                <h2 style="margin-bottom: 2rem;">Settings</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Database Configuration</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Database Status</label>
+                                <div id="dbStatus" class="badge badge-success">Connected</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Endpoint</label>
+                                <input type="text" class="form-input" id="apiEndpoint" readonly>
+                            </div>
+                            <button class="btn btn-primary" onclick="testConnection()">
+                                <i class="fas fa-plug"></i>
+                                Test Connection
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Event Settings</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Event Date</label>
+                                <input type="date" class="form-input" value="2025-08-15" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Event Time</label>
+                                <input type="text" class="form-input" value="5:00 PM - 10:00 PM IST" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Expected Participants</label>
+                                <input type="number" class="form-input" value="3000" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">System Actions</h3>
+                    </div>
+                    <div class="card-content">
+                        <p style="color: #64748b; margin-bottom: 1rem;">
+                            Administrative actions for system maintenance and data management.
+                        </p>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <button class="btn btn-warning" onclick="repairQuizData()">
+                                <i class="fas fa-wrench"></i>
+                                Repair Quiz Data
+                            </button>
+                            <button class="btn btn-info" onclick="initializeDefaultQuizzes()">
+                                <i class="fas fa-magic"></i>
+                                Initialize Defaults
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteAllQuizzes()">
+                                <i class="fas fa-trash-alt"></i>
+                                Delete All Quizzes
+                            </button>
+                            <button class="btn btn-danger" onclick="clearAllData()">
+                                <i class="fas fa-trash"></i>
+                                Clear All Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Quiz Modal -->
+    <div id="createQuizModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Quiz</h3>
+                <button class="modal-close" onclick="closeCreateQuizModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="quizAlert"></div>
+                <form id="createQuizForm">
+                    <input type="hidden" id="editQuizId" value="">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">Quiz ID</label>
+                            <input type="text" id="quizId" class="form-input" placeholder="e.g., nodejs" required>
+                            <small style="color: #64748b;">Lowercase, no spaces</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quiz Name</label>
+                            <input type="text" id="quizName" class="form-input" placeholder="e.g., Node.js Development" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="quizDescription" class="form-input form-textarea" placeholder="Brief description of the quiz" required></textarea>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">Number of Questions</label>
+                            <input type="number" id="numQuestions" class="form-input" min="1" max="50" value="5" onchange="generateQuestionFields()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points per Question</label>
+                            <input type="number" id="pointsPerQuestion" class="form-input" min="1" max="10" value="1">
+                        </div>
+                    </div>
+                    
+                    <div id="questionsContainer"></div>
+                    
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeCreateQuizModal()">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i>
+                            Create Quiz
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Upload Modal -->
+    <div id="uploadCSVModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload Quiz Questions from CSV</h3>
+                <button class="modal-close" onclick="closeUploadCSVModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="csvAlert"></div>
+                
+                <!-- CSV Format Instructions -->
+                <div style="background: #f8fafc; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem; border-left: 4px solid #3b82f6;">
+                    <h4 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1rem;">
+                        <i class="fas fa-info-circle" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                        CSV Format Requirements
+                    </h4>
+                    <p style="margin: 0 0 1rem 0; color: #6b7280; font-size: 0.875rem;">
+                        Your CSV file should have the following columns in this exact order:
+                    </p>
+                    <div style="background: white; padding: 1rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.875rem; border: 1px solid #e5e7eb;">
+                        <strong>question,option1,option2,option3,option4,correct_answer</strong>
+                    </div>
+                    <ul style="margin: 1rem 0 0 0; color: #6b7280; font-size: 0.875rem; padding-left: 1.5rem;">
+                        <li><strong>question:</strong> The question text</li>
+                        <li><strong>option1-4:</strong> The four answer choices</li>
+                        <li><strong>correct_answer:</strong> Number (0-3) indicating correct option (0=option1, 1=option2, etc.)</li>
+                    </ul>
+                </div>
+
+                <form id="uploadCSVForm">
+                    <div class="form-group">
+                        <label class="form-label">Select Target Quiz</label>
+                        <select id="targetQuizSelect" class="form-input" required>
+                            <option value="">Choose a quiz to add questions to...</option>
+                        </select>
+                        <small style="color: #64748b;">Questions will be added to the selected quiz</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">CSV File</label>
+                        <input type="file" id="csvFileInput" class="form-input" accept=".csv" required>
+                        <small style="color: #64748b;">Select a CSV file with quiz questions</small>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" onclick="closeUploadCSVModal()">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload"></i>
+                            Upload Questions
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('adminToken');
+        let currentPage = 'dashboard';
+
+        // API Helper functions
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE_URL}${endpoint}`;
+            console.log('🌐 API Request:', {
+                endpoint,
+                url,
+                method: options.method || 'GET',
+                hasBody: !!options.body,
+                authToken: !!authToken
+            });
+            
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                }
+            };
+            
+            const config = { ...defaultOptions, ...options };
+            if (config.body && typeof config.body === 'object') {
+                config.body = JSON.stringify(config.body);
+            }
+            
+            try {
+                console.log('🔄 Making fetch request...');
+                const response = await fetch(url, config);
+                console.log('📡 Response received:', {
+                    status: response.status,
+                    statusText: response.statusText
+                });
+                
+                if (response.status === 401) {
+                    console.log('🔒 Unauthorized - logging out');
+                    logout();
+                    return;
+                }
+                
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('📦 Response data:', data);
+                } catch (jsonError) {
+                    console.error('❌ Failed to parse JSON:', jsonError);
+                    const textResponse = await response.text();
+                    console.log('📝 Raw response text:', textResponse);
+                    throw new Error(`Invalid JSON response: ${textResponse.substring(0, 200)}`);
+                }
+                
+                if (!response.ok) {
+                    console.error('❌ API Error:', data.error || `HTTP ${response.status}`);
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                updateConnectionStatus(true);
+                console.log('✅ API request successful');
+                return data;
+            } catch (error) {
+                console.error('💥 API Error:', error);
+                updateConnectionStatus(false);
+                throw error;
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('apiEndpoint').value = API_BASE_URL;
+            
+            if (authToken) {
+                showDashboard();
+            } else {
+                showLogin();
+            }
+            
+            generateQuestionFields();
+            
+            // Test connection on startup
+            setTimeout(checkServerStatus, 1000);
+        });
+
+        // Authentication Functions
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await apiRequest('/admin/login', {
+                    method: 'POST',
+                    body: { username, password }
+                });
+                
+                authToken = response.token;
+                localStorage.setItem('adminToken', authToken);
+                showDashboard();
+            } catch (error) {
+                showAlert('loginAlert', error.message, 'error');
+            }
+        });
+
+        function showLogin() {
+            document.getElementById('loginScreen').classList.add('active');
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').classList.remove('active');
+            loadDashboardData();
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('adminToken');
+            showLogin();
+        }
+
+        // Debug Functions
+        async function debugLogin() {
+            console.log('🔧 Debug login initiated...');
+            showAlert('loginAlert', 'Starting debug login process...', 'info');
+            
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'ltimindtree2024';
+            
+            try {
+                showAlert('loginAlert', 'Step 1: Testing server connectivity...', 'info');
+                
+                const pingResponse = await fetch('http://localhost:3000/api/health', {
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                if (!pingResponse.ok) {
+                    throw new Error(`Server health check failed: ${pingResponse.status}`);
+                }
+                
+                showAlert('loginAlert', 'Step 2: Server is reachable, attempting login...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'ltimindtree2024'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    localStorage.setItem('adminToken', authToken);
+                    showDashboard();
+                    showAlert('loginAlert', '✅ Debug login successful!', 'success');
+                } else {
+                    const errorMsg = data.error || `HTTP ${response.status}`;
+                    showAlert('loginAlert', `❌ Login failed: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                showAlert('loginAlert', `❌ Debug login failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkServerStatus() {
+            try {
+                console.log('🔍 Checking server status...');
+                
+                const response = await fetch('http://localhost:3000/api/health', {
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Server is running:', data);
+                    updateConnectionStatus(true);
+                    
+                    if (document.getElementById('loginScreen').classList.contains('active')) {
+                        showAlert('loginAlert', '✅ Server is running! You can try to login now.', 'success');
+                    }
+                } else {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('❌ Server check failed:', error);
+                updateConnectionStatus(false);
+                
+                if (document.getElementById('loginScreen').classList.contains('active')) {
+                    showAlert('loginAlert', `❌ Server not running. Error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // UI Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function showPage(pageId) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            
+            currentPage = pageId;
+            
+            // Load page data
+            switch(pageId) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'quizzes':
+                    loadQuizzes();
+                    break;
+                case 'results':
+                    loadResults();
+                    break;
+                case 'participants':
+                    loadParticipants();
+                    break;
+                case 'links':
+                    loadAssessmentLinks();
+                    break;
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'status-indicator';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i> Server Connected';
+            } else {
+                statusEl.className = 'status-indicator offline';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i> Connection Failed';
+            }
+        }
+
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Dashboard Data Loading
+        async function loadDashboardData() {
+            try {
+                const stats = await apiRequest('/stats');
+                
+                document.getElementById('totalParticipants').textContent = stats.totalParticipants || 0;
+                document.getElementById('totalAssessments').textContent = stats.totalAssessments || 0;
+                document.getElementById('totalQuizzes').textContent = stats.totalQuizzes || 0;
+                document.getElementById('avgScore').textContent = (stats.averageScore || 0) + '%';
+                
+                await loadRecentActivity();
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+                // Set default values if API fails
+                document.getElementById('totalParticipants').textContent = '0';
+                document.getElementById('totalAssessments').textContent = '0';
+                document.getElementById('totalQuizzes').textContent = '0';
+                document.getElementById('avgScore').textContent = '0%';
+            }
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const results = await apiRequest('/results/recent');
+                const container = document.getElementById('recentActivity');
+                
+                if (!results || results.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-clock"></i><p>No recent activity</p></div>';
+                    return;
+                }
+                
+                const html = results.slice(0, 5).map(result => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0;">
+                        <div>
+                            <strong>${result.name}</strong>
+                            <div style="font-size: 0.875rem; color: #64748b;">${result.assessmentTrack}</div>
+                        </div>
+                        <div class="badge badge-success">${result.achievedScore}/${result.maxScore}</div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('recentActivity').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load activity</p></div>';
+            }
+        }
+
+        // Quiz Management Functions
+        async function loadQuizzes() {
+            try {
+                console.log('🔄 Loading quizzes...');
+                const quizzes = await apiRequest('/quizzes');
+                const container = document.getElementById('quizzesTable');
+                
+                console.log('📊 Raw quizzes data:', quizzes);
+                
+                if (!quizzes || Object.keys(quizzes).length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>No quizzes created yet</p></div>';
+                    return;
+                }
+                
+                // Process each quiz to get accurate question counts
+                const processedQuizzes = [];
+                
+                for (const [id, quiz] of Object.entries(quizzes)) {
+                    let questionCount = 0;
+                    
+                    try {
+                        if (quiz.questionCount !== undefined) {
+                            questionCount = quiz.questionCount;
+                        } else if (Array.isArray(quiz.questions)) {
+                            questionCount = quiz.questions.length;
+                        } else if (typeof quiz.questions === 'string' && quiz.questions.trim()) {
+                            try {
+                                const parsed = JSON.parse(quiz.questions);
+                                if (Array.isArray(parsed)) {
+                                    questionCount = parsed.length;
+                                }
+                            } catch (parseError) {
+                                questionCount = 0;
+                            }
+                        }
+                    } catch (e) {
+                        questionCount = 0;
+                    }
+                    
+                    processedQuizzes.push({
+                        id,
+                        quiz: {
+                            ...quiz,
+                            actualQuestionCount: questionCount
+                        }
+                    });
+                }
+                
+                // Generate the table HTML
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Quiz Name</th>
+                                <th>ID</th>
+                                <th>Questions</th>
+                                <th>Points</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${processedQuizzes.map(({ id, quiz }) => `
+                                <tr>
+                                    <td>
+                                        <strong>${quiz.name}</strong><br>
+                                        <small style="color: #64748b;">${quiz.description}</small>
+                                    </td>
+                                    <td><code>${id}</code></td>
+                                    <td>
+                                        <span class="badge ${quiz.actualQuestionCount > 0 ? 'badge-success' : 'badge-warning'}">
+                                            ${quiz.actualQuestionCount}
+                                        </span>
+                                        ${quiz.actualQuestionCount === 0 ? '<br><small style="color: #ef4444;">No questions</small>' : ''}
+                                    </td>
+                                    <td>${quiz.pointsPerQuestion || 1}</td>
+                                    <td>
+                                        <span class="badge ${quiz.isCustom ? 'badge-warning' : 'badge-success'}">
+                                            ${quiz.isCustom ? 'Custom' : 'Default'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" onclick="viewQuiz('${id}')" style="margin-right: 0.5rem;" title="View Quiz">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        ${quiz.actualQuestionCount === 0 ? `
+                                        <button class="btn btn-warning" onclick="fixQuizQuestions('${id}')" style="margin-right: 0.5rem;" title="Fix Questions">
+                                            <i class="fas fa-wrench"></i>
+                                        </button>
+                                        ` : ''}
+                                        <button class="btn btn-info" onclick="debugQuiz('${id}')" style="margin-right: 0.5rem;" title="Debug Quiz">
+                                            <i class="fas fa-bug"></i>
+                                        </button>
+                                        ${quiz.isCustom ? `
+                                        <button class="btn btn-danger" onclick="deleteQuiz('${id}')" title="Delete Quiz">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        ` : ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                container.innerHTML = html;
+                console.log('✅ Quiz table rendered successfully');
+                
+            } catch (error) {
+                console.error('❌ Failed to load quizzes:', error);
+                document.getElementById('quizzesTable').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load quizzes</p></div>';
+            }
+        }
+
+        async function debugAllQuizzes() {
+            try {
+                const summary = await apiRequest('/debug/quiz-summary');
+                console.log('📊 Quiz summary:', summary);
+                
+                const problematicQuizzes = summary.filter(quiz => quiz.questionCount === 0 || quiz.questionCount === -1);
+                
+                if (problematicQuizzes.length > 0) {
+                    console.log(`⚠️ Found ${problematicQuizzes.length} quizzes with issues:`);
+                    
+                    for (const quiz of problematicQuizzes) {
+                        try {
+                            const detailed = await apiRequest(`/debug/quiz-detailed/${quiz.id}`);
+                            console.log(`\n🔍 Detailed debug for ${quiz.id}:`, detailed);
+                        } catch (e) {
+                            console.error(`Failed to get detailed info for ${quiz.id}:`, e);
+                        }
+                    }
+                    
+                    if (confirm(`Found ${problematicQuizzes.length} quizzes with issues. View console for details. Would you like to attempt repairs?`)) {
+                        await repairAllQuizData();
+                    }
+                } else {
+                    alert('All quizzes appear to be healthy! Check console for detailed information.');
+                }
+            } catch (error) {
+                console.error('Debug all quizzes error:', error);
+                alert(`Debug failed: ${error.message}`);
+            }
+        }
+
+        async function runHealthCheck() {
+            try {
+                const health = await apiRequest('/admin/health-check');
+                console.log('📊 Health report:', health);
+                
+                let summary = `Health Check Report (${new Date(health.timestamp).toLocaleString()})\n\n`;
+                summary += `Database: ${health.database.connection}\n`;
+                
+                if (health.database.error) {
+                    summary += `Database Error: ${health.database.error}\n`;
+                }
+                
+                summary += `\nQuizzes: ${health.quizzes.totalCount} total\n`;
+                
+                if (health.quizzes.details) {
+                    const errorQuizzes = health.quizzes.details.filter(q => q.status === 'ERROR').length;
+                    const warningQuizzes = health.quizzes.details.filter(q => q.status === 'WARNING').length;
+                    const okQuizzes = health.quizzes.details.filter(q => q.status === 'OK').length;
+                    
+                    summary += `  - OK: ${okQuizzes}\n`;
+                    summary += `  - Warnings: ${warningQuizzes}\n`;
+                    summary += `  - Errors: ${errorQuizzes}\n`;
+                    
+                    if (errorQuizzes > 0 || warningQuizzes > 0) {
+                        summary += `\nIssues found:\n`;
+                        health.quizzes.details.forEach(quiz => {
+                            if (quiz.status !== 'OK') {
+                                summary += `  - ${quiz.id}: ${quiz.issues.join(', ')}\n`;
+                            }
+                        });
+                    }
+                }
+                
+                summary += `\nResults: ${health.results.totalCount} total\n`;
+                
+                alert(summary);
+                
+                const hasIssues = health.quizzes.details && 
+                                 health.quizzes.details.some(q => q.status !== 'OK');
+                
+                if (hasIssues && confirm('Issues detected. Would you like to attempt repairs?')) {
+                    await repairAllQuizData();
+                }
+            } catch (error) {
+                console.error('Health check error:', error);
+                alert(`Health check failed: ${error.message}`);
+            }
+        }
+
+        async function repairAllQuizData() {
+            if (!confirm('This will attempt to repair ALL quiz data. This may take a moment. Continue?')) {
+                return;
+            }
+            
+            try {
+                console.log('🔧 Starting comprehensive quiz repair...');
+                
+                const result = await apiRequest('/admin/fix-quiz-data', { method: 'POST' });
+                console.log('Server repair result:', result);
+                
+                const quizzes = await apiRequest('/quizzes');
+                const quizIds = Object.keys(quizzes);
+                
+                let repairResults = [];
+                
+                for (const quizId of quizIds) {
+                    try {
+                        const repairResult = await apiRequest(`/admin/repair-quiz/${quizId}`, { 
+                            method: 'POST' 
+                        });
+                        repairResults.push({
+                            quizId,
+                            success: true,
+                            result: repairResult
+                        });
+                    } catch (error) {
+                        repairResults.push({
+                            quizId,
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                try {
+                    await apiRequest('/admin/initialize-defaults', { method: 'POST' });
+                    console.log('✅ Default quizzes re-initialized');
+                } catch (e) {
+                    console.log('⚠️ Default quiz initialization failed:', e);
+                }
+                
+                const successful = repairResults.filter(r => r.success).length;
+                const failed = repairResults.filter(r => !r.success).length;
+                
+                let message = `Quiz repair completed!\n\n`;
+                message += `Successfully repaired: ${successful} quizzes\n`;
+                message += `Failed to repair: ${failed} quizzes\n`;
+                
+                if (failed > 0) {
+                    message += `\nFailed quizzes:\n`;
+                    repairResults.filter(r => !r.success).forEach(r => {
+                        message += `- ${r.quizId}: ${r.error}\n`;
+                    });
+                }
+                
+                alert(message);
+                
+                loadQuizzes();
+                loadDashboardData();
+            } catch (error) {
+                console.error('❌ Comprehensive repair failed:', error);
+                alert(`Repair failed: ${error.message}`);
+            }
+        }
+
+        async function fixQuizQuestions(quizId) {
+            if (!confirm(`Attempt to fix questions for quiz "${quizId}"?`)) {
+                return;
+            }
+            
+            try {
+                const result = await apiRequest(`/admin/repair-quiz/${quizId}`, {
+                    method: 'POST'
+                });
+                
+                alert(`Quiz "${quizId}" repair completed!\n\n${result.message}\nQuestions: ${result.questionsCount}`);
+                
+                loadQuizzes();
+                loadDashboardData();
+            } catch (error) {
+                alert(`Failed to fix quiz: ${error.message}`);
+            }
+        }
+
+        async function debugQuiz(quizId) {
+            try {
+                const debugInfo = await apiRequest(`/debug/quiz-detailed/${quizId}`);
+                
+                let message = `Debug Info for Quiz: ${debugInfo.id}\n\n`;
+                message += `Name: ${debugInfo.name}\n`;
+                message += `Questions Type: ${debugInfo.questionsType}\n`;
+                message += `Questions Length: ${debugInfo.questionsLength}\n`;
+                message += `Is String: ${debugInfo.isString}\n`;
+                message += `Is Array: ${debugInfo.isArray}\n`;
+                message += `Is Object: ${debugInfo.isObject}\n`;
+                
+                if (debugInfo.parseSuccess !== undefined) {
+                    message += `Parse Success: ${debugInfo.parseSuccess}\n`;
+                    if (debugInfo.parseSuccess) {
+                        message += `Parsed Length: ${debugInfo.parsedLength}\n`;
+                    } else {
+                        message += `Parse Error: ${debugInfo.parseError}\n`;
+                    }
+                }
+                
+                console.log('Full debug info:', debugInfo);
+                alert(message + '\nSee console for full details.');
+            } catch (error) {
+                alert(`Debug failed: ${error.message}`);
+            }
+        }
+
+        function showCreateQuizModal() {
+            showQuizCreationWizard();
+        }
+
+        function showQuizCreationWizard() {
+            const modalHtml = `
+                <div id="quizWizardModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; max-width: 900px; width: 95%; max-height: 90%; overflow-y: auto; border-radius: 8px; padding: 0;">
+                        <!-- Wizard Header -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px 8px 0 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h2 style="margin: 0;">🎯 Quiz Creation Wizard</h2>
+                                <button onclick="closeQuizWizard()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                            </div>
+                            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                <div id="step1-indicator" class="step-indicator active">1. Choose Method</div>
+                                <div id="step2-indicator" class="step-indicator">2. Quiz Details</div>
+                                <div id="step3-indicator" class="step-indicator">3. Add Questions</div>
+                                <div id="step4-indicator" class="step-indicator">4. Review & Create</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Wizard Content -->
+                        <div style="padding: 2rem;">
+                            <!-- Step 1: Choose Creation Method -->
+                            <div id="wizard-step-1" class="wizard-step active">
+                                <h3 style="color: #1f2937; margin-bottom: 1.5rem;">Choose how you want to create your quiz:</h3>
+                                
+                                <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                                    <div class="creation-method-card" onclick="selectCreationMethod('manual')" data-method="manual">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="font-size: 2rem;">✏️</div>
+                                            <div>
+                                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">Manual Creation</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Create quiz step-by-step with manual question entry</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="creation-method-card" onclick="selectCreationMethod('csv-single')" data-method="csv-single">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="font-size: 2rem;">📄</div>
+                                            <div>
+                                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">Single Quiz CSV Import</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Upload questions for one quiz from a CSV file</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="creation-method-card" onclick="selectCreationMethod('csv-pool')" data-method="csv-pool">
+                                        <div style="display: flex; align-items: center; gap: 1rem;">
+                                            <div style="font-size: 2rem;">🎯</div>
+                                            <div>
+                                                <h4 style="margin: 0 0 0.5rem 0; color: #1f2937;">Question Pool Import</h4>
+                                                <p style="margin: 0; color: #6b7280; font-size: 0.875rem;">Import multiple quizzes with questions from a single CSV file</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button id="continue-step1" onclick="proceedToStep2()" disabled style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: not-allowed;">
+                                        Continue
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Quiz Details -->
+                            <div id="wizard-step-2" class="wizard-step" style="display: none;">
+                                <div id="manual-details" style="display: none;">
+                                    <h3 style="color: #1f2937; margin-bottom: 1.5rem;">📝 Quiz Details</h3>
+                                    <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Quiz Code *</label>
+                                            <input type="text" id="wizard-quizCode" placeholder="e.g., javascript-advanced" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                            <small style="color: #6b7280;">Lowercase letters, numbers, and hyphens only. This will be used in the assessment URL.</small>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Quiz Name *</label>
+                                            <input type="text" id="wizard-quizName" placeholder="e.g., Advanced JavaScript Concepts" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Description</label>
+                                            <textarea id="wizard-quizDescription" placeholder="Describe what this quiz covers..." style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; resize: vertical; min-height: 80px;"></textarea>
+                                        </div>
+                                        <div>
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Points per Question</label>
+                                            <input type="number" id="wizard-pointsPerQuestion" value="1" min="1" max="10" style="width: 100px; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="csv-details" style="display: none;">
+                                    <h3 style="color: #1f2937; margin-bottom: 1.5rem;">📤 CSV Import Options</h3>
+                                    <div id="csv-single-import" style="display: none;">
+                                        <p style="color: #6b7280; margin-bottom: 1rem;">Upload a CSV file with questions for a single quiz.</p>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Quiz Code *</label>
+                                            <input type="text" id="csv-quizCode" placeholder="e.g., javascript-basics" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                        </div>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Quiz Name *</label>
+                                            <input type="text" id="csv-quizName" placeholder="e.g., JavaScript Basics" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                        </div>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">CSV File *</label>
+                                            <input type="file" id="csv-single-file" accept=".csv" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                            <small style="color: #6b7280;">Format: Question, Option A, Option B, Option C, Option D, Correct Answer (0-3)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="csv-pool-import" style="display: none;">
+                                        <p style="color: #6b7280; margin-bottom: 1rem;">Upload a CSV file that contains multiple quizzes with their questions.</p>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">CSV File *</label>
+                                            <input type="file" id="csv-pool-file" accept=".csv" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
+                                            <small style="color: #6b7280;">Format: Quiz Code, Quiz Name, Question, Option A, Option B, Option C, Option D, Correct Answer (0-3)</small>
+                                        </div>
+                                        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1rem;">
+                                            <h4 style="margin: 0 0 0.5rem 0; color: #0369a1;">📋 CSV Format Example:</h4>
+                                            <code style="display: block; background: white; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; overflow-x: auto;">
+Quiz Code,Quiz Name,Question,Option A,Option B,Option C,Option D,Correct Answer<br>
+javascript,JavaScript Basics,What is a variable?,storage,function,loop,object,0<br>
+javascript,JavaScript Basics,Which declares function?,var,function,let,const,1<br>
+python,Python Fundamentals,How to print?,print(),echo(),write(),display(),0
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between;">
+                                    <button onclick="goToStep(1)" style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: pointer;">
+                                        ← Back
+                                    </button>
+                                    <button id="continue-step2" onclick="proceedToStep3()" style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: pointer;">
+                                        Continue →
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Add Questions -->
+                            <div id="wizard-step-3" class="wizard-step" style="display: none;">
+                                <div id="manual-questions" style="display: none;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                        <h3 style="color: #1f2937; margin: 0;">📚 Add Questions</h3>
+                                        <button onclick="addNewWizardQuestion()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                                            ➕ Add Question
+                                        </button>
+                                    </div>
+                                    <div id="wizard-questions-container">
+                                        <!-- Questions will be added here dynamically -->
+                                    </div>
+                                </div>
+                                
+                                <div id="csv-preview" style="display: none;">
+                                    <h3 style="color: #1f2937; margin-bottom: 1.5rem;">📋 Preview Questions</h3>
+                                    <div id="csv-preview-content">
+                                        <!-- CSV preview will be shown here -->
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+                                    <button onclick="goToStep(2)" style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: pointer;">
+                                        ← Back
+                                    </button>
+                                    <button id="continue-step3" onclick="proceedToStep4()" style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: pointer;">
+                                        Continue →
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 4: Review & Create -->
+                            <div id="wizard-step-4" class="wizard-step" style="display: none;">
+                                <h3 style="color: #1f2937; margin-bottom: 1.5rem;">🔍 Review & Create Quiz</h3>
+                                <div id="quiz-review-content">
+                                    <!-- Review content will be populated here -->
+                                </div>
+                                
+                                <div id="wizard-alerts" style="margin: 1rem 0;"></div>
+                                
+                                <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+                                    <button onclick="goToStep(3)" style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.375rem; cursor: pointer;">
+                                        ← Back
+                                    </button>
+                                    <button id="create-quiz-btn" onclick="createQuizFromWizard()" style="background: #16a34a; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; cursor: pointer; font-weight: 600;">
+                                        🚀 Create Quiz
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Add CSS for the wizard
+            const wizardCSS = `
+                <style>
+                    .step-indicator {
+                        padding: 0.5rem 1rem;
+                        background: rgba(255,255,255,0.2);
+                        border-radius: 0.375rem;
+                        font-size: 0.875rem;
+                        font-weight: 500;
+                    }
+                    .step-indicator.active {
+                        background: rgba(255,255,255,0.3);
+                        box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
+                    }
+                    .creation-method-card {
+                        padding: 1.5rem;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 0.5rem;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+                    .creation-method-card:hover {
+                        border-color: #3b82f6;
+                        background: #f8fafc;
+                    }
+                    .creation-method-card.selected {
+                        border-color: #3b82f6;
+                        background: #eff6ff;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                    }
+                    .wizard-question-card {
+                        border: 1px solid #e5e7eb;
+                        border-radius: 0.5rem;
+                        padding: 1.5rem;
+                        margin-bottom: 1rem;
+                        background: #fafafa;
+                    }
+                    .wizard-question-card h4 {
+                        margin: 0 0 1rem 0;
+                        color: #1f2937;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                </style>
+            `;
+            document.head.insertAdjacentHTML('beforeend', wizardCSS);
+        }
+
+        function closeCreateQuizModal() {
+            document.getElementById('createQuizModal').classList.remove('active');
+        }
+
+        function closeQuizWizard() {
+            const modal = document.getElementById('quizWizardModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Wizard navigation and state
+        let wizardState = {
+            currentStep: 1,
+            creationMethod: null,
+            quizData: {},
+            questions: []
+        };
+
+        function selectCreationMethod(method) {
+            wizardState.creationMethod = method;
+            
+            // Update UI
+            document.querySelectorAll('.creation-method-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+            
+            // Enable continue button
+            const continueBtn = document.getElementById('continue-step1');
+            continueBtn.disabled = false;
+            continueBtn.style.background = '#3b82f6';
+            continueBtn.style.cursor = 'pointer';
+        }
+
+        function goToStep(stepNumber) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(step => {
+                step.style.display = 'none';
+            });
+            
+            // Remove active class from all indicators
+            document.querySelectorAll('.step-indicator').forEach(indicator => {
+                indicator.classList.remove('active');
+            });
+            
+            // Show target step
+            document.getElementById(`wizard-step-${stepNumber}`).style.display = 'block';
+            document.getElementById(`step${stepNumber}-indicator`).classList.add('active');
+            
+            wizardState.currentStep = stepNumber;
+        }
+
+        function proceedToStep2() {
+            if (!wizardState.creationMethod) {
+                alert('Please select a creation method first.');
+                return;
+            }
+            
+            goToStep(2);
+            
+            // Show appropriate form based on method
+            if (wizardState.creationMethod === 'manual') {
+                document.getElementById('manual-details').style.display = 'block';
+                document.getElementById('csv-details').style.display = 'none';
+            } else if (wizardState.creationMethod === 'csv-single') {
+                document.getElementById('manual-details').style.display = 'none';
+                document.getElementById('csv-details').style.display = 'block';
+                document.getElementById('csv-single-import').style.display = 'block';
+                document.getElementById('csv-pool-import').style.display = 'none';
+            } else if (wizardState.creationMethod === 'csv-pool') {
+                document.getElementById('manual-details').style.display = 'none';
+                document.getElementById('csv-details').style.display = 'block';
+                document.getElementById('csv-single-import').style.display = 'none';
+                document.getElementById('csv-pool-import').style.display = 'block';
+            }
+        }
+
+        async function proceedToStep3() {
+            if (wizardState.creationMethod === 'manual') {
+                const quizCode = document.getElementById('wizard-quizCode').value.trim();
+                const quizName = document.getElementById('wizard-quizName').value.trim();
+                
+                if (!quizCode || !quizName) {
+                    alert('Please fill in Quiz Code and Quiz Name.');
+                    return;
+                }
+                
+                wizardState.quizData = {
+                    code: quizCode.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+                    name: quizName,
+                    description: document.getElementById('wizard-quizDescription').value.trim(),
+                    pointsPerQuestion: parseInt(document.getElementById('wizard-pointsPerQuestion').value) || 1
+                };
+                
+                goToStep(3);
+                document.getElementById('manual-questions').style.display = 'block';
+                document.getElementById('csv-preview').style.display = 'none';
+                
+                // Add initial question if none exist
+                if (wizardState.questions.length === 0) {
+                    addNewWizardQuestion();
+                }
+                
+            } else if (wizardState.creationMethod === 'csv-single') {
+                const quizCode = document.getElementById('csv-quizCode').value.trim();
+                const quizName = document.getElementById('csv-quizName').value.trim();
+                const fileInput = document.getElementById('csv-single-file');
+                
+                if (!quizCode || !quizName || !fileInput.files[0]) {
+                    alert('Please fill in all required fields and select a CSV file.');
+                    return;
+                }
+                
+                try {
+                    const csvContent = await readFileAsText(fileInput.files[0]);
+                    const questions = parseCSV(csvContent);
+                    
+                    if (questions.length === 0) {
+                        alert('No valid questions found in the CSV file.');
+                        return;
+                    }
+                    
+                    wizardState.quizData = {
+                        code: quizCode.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+                        name: quizName,
+                        description: `Imported quiz: ${quizName}`,
+                        pointsPerQuestion: 1
+                    };
+                    wizardState.questions = questions;
+                    
+                    goToStep(3);
+                    document.getElementById('manual-questions').style.display = 'none';
+                    document.getElementById('csv-preview').style.display = 'block';
+                    showCSVPreview(questions);
+                    
+                } catch (error) {
+                    alert(`Error reading CSV file: ${error.message}`);
+                }
+                
+            } else if (wizardState.creationMethod === 'csv-pool') {
+                const fileInput = document.getElementById('csv-pool-file');
+                
+                if (!fileInput.files[0]) {
+                    alert('Please select a CSV file.');
+                    return;
+                }
+                
+                try {
+                    const csvContent = await readFileAsText(fileInput.files[0]);
+                    await importQuizPool(csvContent);
+                    
+                } catch (error) {
+                    alert(`Error processing CSV file: ${error.message}`);
+                }
+            }
+        }
+
+        function proceedToStep4() {
+            if (wizardState.creationMethod !== 'csv-pool') {
+                if (wizardState.questions.length === 0) {
+                    alert('Please add at least one question.');
+                    return;
+                }
+                
+                goToStep(4);
+                showQuizReview();
+            }
+        }
+
+        function addNewWizardQuestion() {
+            const questionIndex = wizardState.questions.length;
+            const questionHtml = `
+                <div class="wizard-question-card" data-question="${questionIndex}">
+                    <h4>
+                        Question ${questionIndex + 1}
+                        <button onclick="removeWizardQuestion(${questionIndex})" style="background: #ef4444; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">
+                            🗑️ Remove
+                        </button>
+                    </h4>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Question Text *</label>
+                        <textarea data-field="question" placeholder="Enter your question..." style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; resize: vertical; min-height: 80px;"></textarea>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Options *</label>
+                        ${['A', 'B', 'C', 'D'].map((letter, idx) => `
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
+                                <span style="font-weight: 500; color: #6b7280; min-width: 20px;">${letter}.</span>
+                                <input type="text" data-field="option-${idx}" placeholder="Option ${letter}" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem;">
+                                <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                    <input type="radio" name="correct-${questionIndex}" value="${idx}">
+                                    <span style="font-size: 0.875rem; color: #6b7280;">Correct</span>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('wizard-questions-container').insertAdjacentHTML('beforeend', questionHtml);
+            wizardState.questions.push({});
+        }
+
+        function removeWizardQuestion(questionIndex) {
+            document.querySelector(`[data-question="${questionIndex}"]`).remove();
+            wizardState.questions.splice(questionIndex, 1);
+            
+            // Reindex remaining questions
+            const container = document.getElementById('wizard-questions-container');
+            container.innerHTML = '';
+            wizardState.questions = [];
+            
+            // Re-add all questions with correct indices
+            const questionCount = container.querySelectorAll('.wizard-question-card').length;
+            for (let i = 0; i < questionCount; i++) {
+                addNewWizardQuestion();
+            }
+        }
+
+        function showCSVPreview(questions) {
+            const previewHtml = `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem;">
+                    <p style="margin: 0 0 1rem 0; color: #374151; font-weight: 500;">Found ${questions.length} questions in your CSV file:</p>
+                    ${questions.slice(0, 3).map((q, index) => `
+                        <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 1rem; margin-bottom: 0.5rem;">
+                            <h5 style="margin: 0 0 0.5rem 0; color: #1f2937;">Question ${index + 1}</h5>
+                            <p style="margin: 0 0 0.5rem 0; font-weight: 500;">${q.question}</p>
+                            <div style="display: grid; gap: 0.25rem;">
+                                ${q.options.map((option, optIndex) => `
+                                    <div style="padding: 0.25rem 0.5rem; background: ${optIndex === q.correct ? '#dcfce7' : '#f9fafb'}; border-radius: 0.25rem;">
+                                        ${String.fromCharCode(65 + optIndex)}. ${option} ${optIndex === q.correct ? '✓' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${questions.length > 3 ? `<p style="margin: 0.5rem 0 0 0; color: #6b7280; font-style: italic;">... and ${questions.length - 3} more questions</p>` : ''}
+                </div>
+            `;
+            
+            document.getElementById('csv-preview-content').innerHTML = previewHtml;
+        }
+
+        function showQuizReview() {
+            const reviewHtml = `
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1.5rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: #1f2937;">Quiz Information</h4>
+                    <div style="display: grid; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <div><strong>Quiz Code:</strong> ${wizardState.quizData.code}</div>
+                        <div><strong>Quiz Name:</strong> ${wizardState.quizData.name}</div>
+                        <div><strong>Description:</strong> ${wizardState.quizData.description || 'No description'}</div>
+                        <div><strong>Points per Question:</strong> ${wizardState.quizData.pointsPerQuestion}</div>
+                        <div><strong>Total Questions:</strong> ${wizardState.questions.length}</div>
+                    </div>
+                    
+                    <h4 style="margin: 0 0 1rem 0; color: #1f2937;">Assessment Link</h4>
+                    <div style="background: white; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <code style="color: #3b82f6;">${window.location.origin + window.location.pathname.replace('admin.html', '')}assessment.html?track=${wizardState.quizData.code}</code>
+                    </div>
+                    
+                    <h4 style="margin: 0 0 1rem 0; color: #1f2937;">Questions Preview</h4>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${wizardState.questions.slice(0, 5).map((q, index) => `
+                            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.375rem; padding: 1rem; margin-bottom: 0.5rem;">
+                                <h5 style="margin: 0 0 0.5rem 0; color: #1f2937;">Question ${index + 1}</h5>
+                                <p style="margin: 0 0 0.5rem 0; font-weight: 500;">${q.question}</p>
+                                <div style="display: grid; gap: 0.25rem;">
+                                    ${q.options.map((option, optIndex) => `
+                                        <div style="padding: 0.25rem 0.5rem; background: ${optIndex === q.correct ? '#dcfce7' : '#f9fafb'}; border-radius: 0.25rem; font-size: 0.875rem;">
+                                            ${String.fromCharCode(65 + optIndex)}. ${option} ${optIndex === q.correct ? '✓' : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${wizardState.questions.length > 5 ? `<p style="margin: 0.5rem 0 0 0; color: #6b7280; font-style: italic; text-align: center;">... and ${wizardState.questions.length - 5} more questions</p>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('quiz-review-content').innerHTML = reviewHtml;
+        }
+
+        async function createQuizFromWizard() {
+            try {
+                // Collect questions for manual method
+                if (wizardState.creationMethod === 'manual') {
+                    wizardState.questions = [];
+                    const questionCards = document.querySelectorAll('.wizard-question-card');
+                    
+                    for (let i = 0; i < questionCards.length; i++) {
+                        const card = questionCards[i];
+                        const question = card.querySelector('[data-field="question"]').value.trim();
+                        const options = [
+                            card.querySelector('[data-field="option-0"]').value.trim(),
+                            card.querySelector('[data-field="option-1"]').value.trim(),
+                            card.querySelector('[data-field="option-2"]').value.trim(),
+                            card.querySelector('[data-field="option-3"]').value.trim()
+                        ];
+                        const correctAnswer = card.querySelector(`input[name="correct-${i}"]:checked`);
+                        
+                        if (!question || options.some(opt => !opt) || !correctAnswer) {
+                            throw new Error(`Please complete all fields for Question ${i + 1}.`);
+                        }
+                        
+                        wizardState.questions.push({
+                            question: question,
+                            options: options,
+                            correct: parseInt(correctAnswer.value)
+                        });
+                    }
+                }
+                
+                // Create the quiz
+                const response = await apiRequest('/quizzes', {
+                    method: 'POST',
+                    body: {
+                        id: wizardState.quizData.code,
+                        name: wizardState.quizData.name,
+                        description: wizardState.quizData.description,
+                        questions: wizardState.questions,
+                        pointsPerQuestion: wizardState.quizData.pointsPerQuestion
+                    }
+                });
+                
+                showAlert('wizard-alerts', 'Quiz created successfully! 🎉', 'success');
+                
+                setTimeout(() => {
+                    closeQuizWizard();
+                    if (currentPage === 'quizzes') {
+                        loadQuizzes();
+                    }
+                    loadDashboardData();
+                }, 1500);
+                
+            } catch (error) {
+                showAlert('wizard-alerts', `Failed to create quiz: ${error.message}`, 'error');
+            }
+        }
+
+        async function importQuizPool(csvContent) {
+            try {
+                const response = await apiRequest('/admin/import-quiz-pool', {
+                    method: 'POST',
+                    body: { csvData: csvContent }
+                });
+                
+                let message = `🎉 Quiz pool import completed!\n\n`;
+                message += `📊 Summary:\n`;
+                message += `• Total Quizzes: ${response.summary.totalQuizzes}\n`;
+                message += `• Created: ${response.summary.createdQuizzes}\n`;
+                message += `• Updated: ${response.summary.updatedQuizzes}\n`;
+                message += `• Questions Processed: ${response.summary.processedQuestions}\n`;
+                message += `• Skipped Lines: ${response.summary.skippedLines}\n`;
+                
+                if (response.summary.errors > 0) {
+                    message += `• Errors: ${response.summary.errors}\n`;
+                }
+                
+                message += `\n📋 Results:\n`;
+                response.results.forEach(result => {
+                    if (result.action === 'created') {
+                        message += `✅ Created "${result.name}" (${result.questionsAdded} questions)\n`;
+                    } else if (result.action === 'updated') {
+                        message += `🔄 Updated "${result.name}" (+${result.questionsAdded} questions, total: ${result.totalQuestions})\n`;
+                    } else if (result.action === 'error') {
+                        message += `❌ Failed "${result.name}": ${result.error}\n`;
+                    }
+                });
+                
+                alert(message);
+                
+                closeQuizWizard();
+                if (currentPage === 'quizzes') {
+                    loadQuizzes();
+                }
+                loadDashboardData();
+                
+            } catch (error) {
+                alert(`Failed to import quiz pool: ${error.message}`);
+            }
+        }
+
+        // Helper function to read file as text
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = e => reject(new Error('Failed to read file'));
+                reader.readAsText(file);
+            });
+        }
+
+        function generateQuestionFields() {
+            const numQuestions = parseInt(document.getElementById('numQuestions').value) || 5;
+            const container = document.getElementById('questionsContainer');
+            
+            container.innerHTML = '';
+
+            for (let i = 0; i < numQuestions; i++) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-builder';
+                questionDiv.innerHTML = `
+                    <h4>Question ${i + 1}</h4>
+                    <div class="form-group">
+                        <label class="form-label">Question Text</label>
+                        <input type="text" class="form-input question-text" placeholder="Enter the question" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Options</label>
+                        ${['A', 'B', 'C', 'D'].map((letter, idx) => `
+                            <div class="option-group">
+                                <input type="text" class="form-input option-input" placeholder="Option ${letter}" required>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="radio" name="correct${i}" value="${idx}" required>
+                                    Correct
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+            }
+        }
+
+        document.getElementById('createQuizForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const quizId = document.getElementById('quizId').value.trim().toLowerCase();
+            const quizName = document.getElementById('quizName').value.trim();
+            const quizDescription = document.getElementById('quizDescription').value.trim();
+            const pointsPerQuestion = parseInt(document.getElementById('pointsPerQuestion').value);
+            
+            const questions = [];
+            const questionBuilders = document.querySelectorAll('.question-builder');
+
+            for (let i = 0; i < questionBuilders.length; i++) {
+                const builder = questionBuilders[i];
+                const questionText = builder.querySelector('.question-text').value.trim();
+                const options = Array.from(builder.querySelectorAll('.option-input')).map(input => input.value.trim());
+                const correctAnswer = builder.querySelector(`input[name="correct${i}"]:checked`);
+
+                if (!questionText || options.some(opt => !opt) || !correctAnswer) {
+                    showAlert('quizAlert', `Please complete all fields for Question ${i + 1}.`, 'error');
+                    return;
+                }
+
+                questions.push({
+                    question: questionText,
+                    options: options,
+                    correct: parseInt(correctAnswer.value),
+                    points: pointsPerQuestion
+                });
+            }
+
+            try {
+                await apiRequest('/quizzes', {
+                    method: 'POST',
+                    body: {
+                        id: quizId,
+                        name: quizName,
+                        description: quizDescription,
+                        questions: questions,
+                        pointsPerQuestion: pointsPerQuestion
+                    }
+                });
+                
+                showAlert('quizAlert', 'Quiz created successfully!', 'success');
+                
+                setTimeout(() => {
+                    closeCreateQuizModal();
+                }, 1000);
+                
+                if (currentPage === 'quizzes') {
+                    loadQuizzes();
+                }
+                
+                loadDashboardData();
+            } catch (error) {
+                showAlert('quizAlert', `Failed to create quiz: ${error.message}`, 'error');
+            }
+        });
+
+        async function deleteQuiz(quizId) {
+            if (confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
+                try {
+                    await apiRequest(`/quizzes/${quizId}`, { method: 'DELETE' });
+                    loadQuizzes();
+                    loadDashboardData();
+                } catch (error) {
+                    alert(`Failed to delete quiz: ${error.message}`);
+                }
+            }
+        }
+
+        async function viewQuiz(quizId) {
+            try {
+                const quiz = await apiRequest(`/quizzes/${quizId}`);
+                
+                if (!quiz || !quiz.questions || !Array.isArray(quiz.questions)) {
+                    alert('Quiz data is not available or corrupted');
+                    return;
+                }
+
+                const modalHtml = `
+                    <div id="quizViewModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+                        <div style="background: white; max-width: 900px; width: 95%; max-height: 90%; overflow-y: auto; border-radius: 8px; padding: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                                <h2 style="margin: 0; color: #1f2937;">${quiz.name}</h2>
+                                <button onclick="closeQuizModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
+                            </div>
+                            
+                            <div style="margin-bottom: 1.5rem;">
+                                <p style="color: #6b7280; margin: 0.5rem 0;"><strong>Description:</strong> ${quiz.description}</p>
+                                <p style="color: #6b7280; margin: 0.5rem 0;"><strong>Questions:</strong> ${quiz.questions.length}</p>
+                                <p style="color: #6b7280; margin: 0.5rem 0;"><strong>Points per Question:</strong> ${quiz.pointsPerQuestion || 1}</p>
+                                <p style="color: #6b7280; margin: 0.5rem 0;"><strong>Type:</strong> ${quiz.isCustom ? 'Custom' : 'Default'}</p>
+                                
+                                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                                    <button onclick="showAddQuestionModal('${quizId}')" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;">
+                                        ➕ Add Question
+                                    </button>
+                                    <button onclick="closeQuizModal(); loadQuizzes();" style="background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 style="color: #1f2937; margin-bottom: 1rem;">Questions:</h3>
+                                ${quiz.questions.map((q, index) => `
+                                    <div style="border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; background: #fafafa;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                            <h4 style="margin: 0; color: #374151;">Question ${index + 1}</h4>
+                                            <div style="display: flex; gap: 0.25rem;">
+                                                <button onclick="showEditQuestionModal('${quizId}', ${index})" style="background: #f59e0b; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">
+                                                    ✏️ Edit
+                                                </button>
+                                                <button onclick="deleteQuestionFromQuiz('${quizId}', ${index})" style="background: #ef4444; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem;">
+                                                    🗑️ Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p style="margin: 0 0 1rem 0; font-weight: 500; color: #1f2937;">${q.question}</p>
+                                        <div style="display: grid; gap: 0.5rem;">
+                                            ${q.options.map((option, optIndex) => `
+                                                <div style="padding: 0.5rem; background: ${optIndex === q.correct ? '#dcfce7' : '#f9fafb'}; border-radius: 4px; border-left: 4px solid ${optIndex === q.correct ? '#16a34a' : '#e5e7eb'};">
+                                                    <span style="font-weight: 500; color: #374151;">Option ${String.fromCharCode(65 + optIndex)}:</span> ${option}
+                                                    ${optIndex === q.correct ? '<span style="color: #16a34a; margin-left: 0.5rem;">✓ Correct</span>' : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            } catch (error) {
+                console.error('ViewQuiz error:', error);
+                alert(`Failed to load quiz: ${error.message}`);
+            }
+        }
+
+        function closeQuizModal() {
+            const modal = document.getElementById('quizViewModal');
+            if (modal) {
+                modal.remove();
+            }
+            
+            // Also close question management modals
+            const addModal = document.getElementById('addQuestionModal');
+            if (addModal) {
+                addModal.remove();
+            }
+            
+            const editModal = document.getElementById('editQuestionModal');
+            if (editModal) {
+                editModal.remove();
+            }
+        }
+
+        // Add Question Modal
+        function showAddQuestionModal(quizId) {
+            const modalHtml = `
+                <div id="addQuestionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1100; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; max-width: 600px; width: 90%; max-height: 90%; overflow-y: auto; border-radius: 8px; padding: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                            <h3 style="margin: 0; color: #1f2937;">Add New Question</h3>
+                            <button onclick="closeAddQuestionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
+                        </div>
+                        
+                        <form id="addQuestionForm" onsubmit="submitAddQuestion(event, '${quizId}')">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Question Text</label>
+                                <textarea id="newQuestionText" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; resize: vertical; min-height: 80px;" placeholder="Enter the question..."></textarea>
+                            </div>
+                            
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Options</label>
+                                ${['A', 'B', 'C', 'D'].map((letter, idx) => `
+                                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
+                                        <span style="font-weight: 500; color: #6b7280; min-width: 20px;">${letter}.</span>
+                                        <input type="text" id="newOption${idx}" required style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem;" placeholder="Option ${letter}">
+                                        <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                            <input type="radio" name="newCorrectAnswer" value="${idx}" required>
+                                            <span style="font-size: 0.875rem; color: #6b7280;">Correct</span>
+                                        </label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div id="addQuestionAlert"></div>
+                            
+                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button type="button" onclick="closeAddQuestionModal()" style="background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                                    Cancel
+                                </button>
+                                <button type="submit" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                                    Add Question
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function closeAddQuestionModal() {
+            const modal = document.getElementById('addQuestionModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function submitAddQuestion(event, quizId) {
+            event.preventDefault();
+            
+            const questionText = document.getElementById('newQuestionText').value.trim();
+            const options = [
+                document.getElementById('newOption0').value.trim(),
+                document.getElementById('newOption1').value.trim(),
+                document.getElementById('newOption2').value.trim(),
+                document.getElementById('newOption3').value.trim()
+            ];
+            const correctAnswer = document.querySelector('input[name="newCorrectAnswer"]:checked');
+            
+            if (!questionText || options.some(opt => !opt) || !correctAnswer) {
+                showAlert('addQuestionAlert', 'Please fill in all fields and select the correct answer.', 'error');
+                return;
+            }
+            
+            try {
+                await apiRequest(`/quizzes/${quizId}/questions/single`, {
+                    method: 'POST',
+                    body: {
+                        question: questionText,
+                        options: options,
+                        correct: parseInt(correctAnswer.value)
+                    }
+                });
+                
+                showAlert('addQuestionAlert', 'Question added successfully!', 'success');
+                
+                setTimeout(() => {
+                    closeAddQuestionModal();
+                    // Refresh the quiz view
+                    closeQuizModal();
+                    viewQuiz(quizId);
+                    // Refresh the quiz list
+                    if (currentPage === 'quizzes') {
+                        loadQuizzes();
+                    }
+                    loadDashboardData();
+                }, 1000);
+                
+            } catch (error) {
+                showAlert('addQuestionAlert', `Failed to add question: ${error.message}`, 'error');
+            }
+        }
+
+        // Edit Question Modal
+        async function showEditQuestionModal(quizId, questionIndex) {
+            try {
+                const quiz = await apiRequest(`/quizzes/${quizId}`);
+                const question = quiz.questions[questionIndex];
+                
+                if (!question) {
+                    alert('Question not found');
+                    return;
+                }
+                
+                const modalHtml = `
+                    <div id="editQuestionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1100; display: flex; align-items: center; justify-content: center;">
+                        <div style="background: white; max-width: 600px; width: 90%; max-height: 90%; overflow-y: auto; border-radius: 8px; padding: 2rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                                <h3 style="margin: 0; color: #1f2937;">Edit Question ${questionIndex + 1}</h3>
+                                <button onclick="closeEditQuestionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280;">&times;</button>
+                            </div>
+                            
+                            <form id="editQuestionForm" onsubmit="submitEditQuestion(event, '${quizId}', ${questionIndex})">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Question Text</label>
+                                    <textarea id="editQuestionText" required style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; resize: vertical; min-height: 80px;" placeholder="Enter the question...">${question.question}</textarea>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151;">Options</label>
+                                    ${['A', 'B', 'C', 'D'].map((letter, idx) => `
+                                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem;">
+                                            <span style="font-weight: 500; color: #6b7280; min-width: 20px;">${letter}.</span>
+                                            <input type="text" id="editOption${idx}" required style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem;" placeholder="Option ${letter}" value="${question.options[idx] || ''}">
+                                            <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                                <input type="radio" name="editCorrectAnswer" value="${idx}" ${idx === question.correct ? 'checked' : ''} required>
+                                                <span style="font-size: 0.875rem; color: #6b7280;">Correct</span>
+                                            </label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div id="editQuestionAlert"></div>
+                                
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                    <button type="button" onclick="closeEditQuestionModal()" style="background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" style="background: #f59e0b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                                        Update Question
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                
+            } catch (error) {
+                alert(`Failed to load question: ${error.message}`);
+            }
+        }
+
+        function closeEditQuestionModal() {
+            const modal = document.getElementById('editQuestionModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function submitEditQuestion(event, quizId, questionIndex) {
+            event.preventDefault();
+            
+            const questionText = document.getElementById('editQuestionText').value.trim();
+            const options = [
+                document.getElementById('editOption0').value.trim(),
+                document.getElementById('editOption1').value.trim(),
+                document.getElementById('editOption2').value.trim(),
+                document.getElementById('editOption3').value.trim()
+            ];
+            const correctAnswer = document.querySelector('input[name="editCorrectAnswer"]:checked');
+            
+            if (!questionText || options.some(opt => !opt) || !correctAnswer) {
+                showAlert('editQuestionAlert', 'Please fill in all fields and select the correct answer.', 'error');
+                return;
+            }
+            
+            try {
+                await apiRequest(`/quizzes/${quizId}/questions/${questionIndex}`, {
+                    method: 'PUT',
+                    body: {
+                        question: questionText,
+                        options: options,
+                        correct: parseInt(correctAnswer.value)
+                    }
+                });
+                
+                showAlert('editQuestionAlert', 'Question updated successfully!', 'success');
+                
+                setTimeout(() => {
+                    closeEditQuestionModal();
+                    // Refresh the quiz view
+                    closeQuizModal();
+                    viewQuiz(quizId);
+                    // Refresh the quiz list
+                    if (currentPage === 'quizzes') {
+                        loadQuizzes();
+                    }
+                    loadDashboardData();
+                }, 1000);
+                
+            } catch (error) {
+                showAlert('editQuestionAlert', `Failed to update question: ${error.message}`, 'error');
+            }
+        }
+
+        // Delete Question Function
+        async function deleteQuestionFromQuiz(quizId, questionIndex) {
+            if (!confirm(`Are you sure you want to delete Question ${questionIndex + 1}? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/quizzes/${quizId}/questions/${questionIndex}`, {
+                    method: 'DELETE'
+                });
+                
+                alert('Question deleted successfully!');
+                
+                // Refresh the quiz view
+                closeQuizModal();
+                viewQuiz(quizId);
+                
+                // Refresh the quiz list
+                if (currentPage === 'quizzes') {
+                    loadQuizzes();
+                }
+                loadDashboardData();
+                
+            } catch (error) {
+                alert(`Failed to delete question: ${error.message}`);
+            }
+        }
+
+        // Results Management
+        async function loadResults() {
+            try {
+                const results = await apiRequest('/results');
+                const container = document.getElementById('resultsTable');
+                
+                if (!results || results.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><p>No assessment results yet</p></div>';
+                    return;
+                }
+                
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Assessment</th>
+                                <th>Score</th>
+                                <th>Completion Time</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.map(result => {
+                                const percentage = Math.round((result.achievedScore / result.maxScore) * 100);
+                                const duration = Math.floor(result.duration / 60) + ':' + (result.duration % 60).toString().padStart(2, '0');
+                                const completionTime = new Date(result.completionTime).toLocaleString();
+                                
+                                return `
+                                    <tr>
+                                        <td><strong>${result.name}</strong></td>
+                                        <td>${result.email}</td>
+                                        <td>${result.assessmentTrack}</td>
+                                        <td>
+                                            <span class="badge ${percentage >= 70 ? 'badge-success' : percentage >= 50 ? 'badge-warning' : 'badge-danger'}">
+                                                ${result.achievedScore}/${result.maxScore} (${percentage}%)
+                                            </span>
+                                        </td>
+                                        <td>${completionTime}</td>
+                                        <td>${duration}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('resultsTable').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load results</p></div>';
+            }
+        }
+
+        async function exportAllResults() {
+            try {
+                const results = await apiRequest('/results');
+                exportToCSV(results, 'ltimindtree_all_results');
+            } catch (error) {
+                alert(`Failed to export results: ${error.message}`);
+            }
+        }
+
+        async function exportRecentResults() {
+            try {
+                const results = await apiRequest('/results/recent');
+                exportToCSV(results, 'ltimindtree_recent_results');
+            } catch (error) {
+                alert(`Failed to export recent results: ${error.message}`);
+            }
+        }
+
+        function exportToCSV(data, filename) {
+            if (!data || data.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const csv = [
+                ['Name', 'Email', 'Assessment Track', 'Login Date and Time', 'Completion Time', 'Max Score', 'Achieved Score'].join(','),
+                ...data.map(r => [
+                    `"${r.name}"`,
+                    `"${r.email}"`,
+                    `"${r.assessmentTrack}"`,
+                    `"${new Date(r.loginDateTime).toLocaleString()}"`,
+                    `"${new Date(r.completionTime).toLocaleString()}"`,
+                    r.maxScore,
+                    r.achievedScore
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Participants Management
+        async function loadParticipants() {
+            try {
+                const results = await apiRequest('/results');
+                const container = document.getElementById('participantsTable');
+                
+                if (!results || results.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No participants yet</p></div>';
+                    return;
+                }
+                
+                // Group by participant
+                const participants = {};
+                results.forEach(result => {
+                    if (!participants[result.email]) {
+                        participants[result.email] = {
+                            name: result.name,
+                            email: result.email,
+                            assessments: [],
+                            totalScore: 0,
+                            maxPossible: 0
+                        };
+                    }
+                    participants[result.email].assessments.push(result);
+                    participants[result.email].totalScore += result.achievedScore;
+                    participants[result.email].maxPossible += result.maxScore;
+                });
+                
+                const html = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Assessments Taken</th>
+                                <th>Overall Score</th>
+                                <th>Last Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.values(participants).map(participant => {
+                                const overallPercentage = Math.round((participant.totalScore / participant.maxPossible) * 100);
+                                const lastActivity = new Date(Math.max(...participant.assessments.map(a => new Date(a.completionTime)))).toLocaleString();
+                                
+                                return `
+                                    <tr>
+                                        <td><strong>${participant.name}</strong></td>
+                                        <td>${participant.email}</td>
+                                        <td>${participant.assessments.length}</td>
+                                        <td>
+                                            <span class="badge ${overallPercentage >= 70 ? 'badge-success' : overallPercentage >= 50 ? 'badge-warning' : 'badge-danger'}">
+                                                ${participant.totalScore}/${participant.maxPossible} (${overallPercentage}%)
+                                            </span>
+                                        </td>
+                                        <td>${lastActivity}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('participantsTable').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load participants</p></div>';
+            }
+        }
+
+        // Assessment Links
+        async function loadAssessmentLinks() {
+            try {
+                const quizzes = await apiRequest('/quizzes');
+                const container = document.getElementById('linksContainer');
+                const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '');
+                
+                if (!quizzes || Object.keys(quizzes).length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-link"></i><p>No quizzes available</p></div>';
+                    return;
+                }
+                
+                const html = Object.entries(quizzes).map(([id, quiz]) => {
+                    const url = `${baseUrl}assessment.html?track=${id}`;
+                    const questionCount = quiz.questionCount || (quiz.questions ? quiz.questions.length : 0) || 0;
+                    return `
+                        <div style="border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1rem; background: white;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">${quiz.name}</h4>
+                                    <p style="color: #64748b; margin-bottom: 0.5rem;">${quiz.description}</p>
+                                    <div style="font-size: 0.875rem; color: #64748b;">
+                                        <span class="badge ${questionCount > 0 ? 'badge-success' : 'badge-warning'}">${questionCount} Questions</span>
+                                        <span class="badge badge-warning">${quiz.pointsPerQuestion || 1} Points Each</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <input type="text" value="${url}" readonly class="form-input" style="flex: 1; font-family: monospace; font-size: 0.875rem;">
+                                <button class="btn btn-primary" onclick="copyToClipboard('${url}')">
+                                    <i class="fas fa-copy"></i>
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('linksContainer').innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Failed to load links</p></div>';
+            }
+        }
+
+        function refreshLinks() {
+            loadAssessmentLinks();
+        }
+
+        function copyToClipboard(text) {
+            const button = event.target.closest('button');
+            const originalHtml = button.innerHTML;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.style.backgroundColor = '#16a34a';
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.style.backgroundColor = '#16a34a';
+                setTimeout(() => {
+                    button.innerHTML = originalHtml;
+                    button.style.backgroundColor = '';
+                }, 2000);
+            });
+        }
+
+        // Settings Functions
+        async function testConnection() {
+            try {
+                await apiRequest('/health');
+                alert('Connection successful!');
+                updateConnectionStatus(true);
+            } catch (error) {
+                alert(`Connection failed: ${error.message}`);
+                updateConnectionStatus(false);
+            }
+        }
+
+        async function repairQuizData() {
+            if (confirm('This will attempt to repair corrupted quiz data. Continue?')) {
+                try {
+                    const result = await apiRequest('/admin/fix-quiz-data', { method: 'POST' });
+                    alert(`Quiz data repair completed: ${result.message}`);
+                    
+                    if (currentPage === 'quizzes') {
+                        loadQuizzes();
+                    }
+                    loadDashboardData();
+                } catch (error) {
+                    alert(`Quiz repair failed: ${error.message}`);
+                }
+            }
+        }
+
+        async function deleteAllQuizzes() {
+            if (confirm('Are you sure you want to delete ALL quizzes? This will remove all default and custom quizzes. This action cannot be undone.')) {
+                if (confirm('This will delete ALL quiz data including default quizzes. Are you absolutely sure?')) {
+                    try {
+                        const result = await apiRequest('/admin/quizzes/all', { method: 'DELETE' });
+                        alert(`Successfully deleted all quizzes: ${result.message}`);
+                        
+                        if (currentPage === 'quizzes') {
+                            loadQuizzes();
+                        }
+                        loadDashboardData();
+                        loadAssessmentLinks();
+                    } catch (error) {
+                        alert(`Failed to delete all quizzes: ${error.message}`);
+                    }
+                }
+            }
+        }
+
+        async function initializeDefaultQuizzes() {
+            if (!confirm('This will add sample questions to the default quizzes (JavaScript, Python, React). Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await apiRequest('/admin/initialize-defaults', { method: 'POST' });
+                alert('Default quizzes initialized with sample questions!');
+                loadQuizzes();
+                loadDashboardData();
+            } catch (error) {
+                console.error('Initialize defaults error:', error);
+                alert('Failed to initialize default quizzes: ' + error.message);
+            }
+        }
+
+        async function clearAllData() {
+            if (confirm('Are you sure you want to clear all assessment data? This action cannot be undone.')) {
+                try {
+                    await apiRequest('/results', { method: 'DELETE' });
+                    alert('All data cleared successfully');
+                    loadDashboardData();
+                    if (currentPage === 'results') loadResults();
+                    if (currentPage === 'participants') loadParticipants();
+                } catch (error) {
+                    alert(`Failed to clear data: ${error.message}`);
+                }
+            }
+        }
+
+        // CSV Upload Functions
+        function showUploadCSVModal() {
+            document.getElementById('uploadCSVModal').classList.add('active');
+            loadQuizListForCSV();
+            document.getElementById('csvFileInput').value = '';
+            document.getElementById('csvAlert').innerHTML = '';
+        }
+
+        function closeUploadCSVModal() {
+            document.getElementById('uploadCSVModal').classList.remove('active');
+        }
+
+        async function loadQuizListForCSV() {
+            try {
+                const quizzes = await apiRequest('/quizzes');
+                const select = document.getElementById('targetQuizSelect');
+                select.innerHTML = '<option value="">Choose a quiz to add questions to...</option>';
+                
+                Object.entries(quizzes).forEach(([id, quiz]) => {
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = `${quiz.name} (${quiz.questions?.length || 0} questions)`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load quiz list:', error);
+                showAlert('csvAlert', 'Failed to load quiz list', 'error');
+            }
+        }
+
+        document.getElementById('uploadCSVForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const targetQuizId = document.getElementById('targetQuizSelect').value;
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+            
+            if (!targetQuizId) {
+                showAlert('csvAlert', 'Please select a target quiz', 'error');
+                return;
+            }
+            
+            if (!file) {
+                showAlert('csvAlert', 'Please select a CSV file', 'error');
+                return;
+            }
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const csv = e.target.result;
+                        const questions = parseCSV(csv);
+                        
+                        if (questions.length === 0) {
+                            showAlert('csvAlert', 'No valid questions found in CSV file', 'error');
+                            return;
+                        }
+                        
+                        const result = await apiRequest(`/quizzes/${targetQuizId}/questions`, {
+                            method: 'POST',
+                            body: {
+                                questions: questions.map(q => ({
+                                    question: q.question,
+                                    options: q.options,
+                                    correct: q.correct
+                                }))
+                            }
+                        });
+                        
+                        showAlert('csvAlert', `Successfully uploaded ${questions.length} questions!`, 'success');
+                        
+                        setTimeout(() => {
+                            closeUploadCSVModal();
+                        }, 1500);
+                        
+                        if (currentPage === 'quizzes') {
+                            loadQuizzes();
+                        }
+                        loadDashboardData();
+                    } catch (error) {
+                        showAlert('csvAlert', `Failed to upload questions: ${error.message}`, 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            } catch (error) {
+                showAlert('csvAlert', `Failed to process CSV file: ${error.message}`, 'error');
+            }
+        });
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const questions = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const fields = parseCSVLine(line);
+                
+                if (fields.length < 6) {
+                    continue;
+                }
+                
+                const [question, option1, option2, option3, option4, correctAnswer] = fields;
+                
+                if (!question.trim() || !option1.trim() || !option2.trim() || !option3.trim() || !option4.trim()) {
+                    continue;
+                }
+                
+                const correct = parseInt(correctAnswer);
+                if (isNaN(correct) || correct < 0 || correct > 3) {
+                    continue;
+                }
+                
+                questions.push({
+                    question: question.trim(),
+                    options: [option1.trim(), option2.trim(), option3.trim(), option4.trim()],
+                    correct: correct
+                });
+            }
+            
+            return questions;
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+
+        // Expose debug functions globally
+        window.debugLogin = debugLogin;
+        window.checkServerStatus = checkServerStatus;
+        
+        // Global API test function for browser console
+        window.testAPI = async function() {
+            console.log('🧪 Starting comprehensive API test...');
+            
+            try {
+                // Test health endpoint
+                console.log('🔍 Testing health endpoint...');
+                const health = await fetch('http://localhost:3000/api/health');
+                const healthData = await health.json();
+                console.log('✅ Health:', healthData);
+                
+                // Test login
+                console.log('🔑 Testing login...');
+                const login = await fetch('http://localhost:3000/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'ltimindtree2024' })
+                });
+                const loginData = await login.json();
+                console.log('✅ Login:', loginData);
+                
+                if (loginData.token) {
+                    authToken = loginData.token;
+                    localStorage.setItem('adminToken', authToken);
+                    
+                    // Test quizzes endpoint
+                    console.log('📚 Testing quizzes endpoint...');
+                    const quizzes = await apiRequest('/quizzes');
+                    console.log('✅ Quizzes:', quizzes);
+                    
+                    // Test quiz management endpoints if we have quizzes
+                    const quizIds = Object.keys(quizzes);
+                    if (quizIds.length > 0) {
+                        const testQuizId = quizIds[0];
+                        console.log(`🔧 Testing question management with quiz: ${testQuizId}`);
+                        
+                        // Test getting specific quiz
+                        const quiz = await apiRequest(`/quizzes/${testQuizId}`);
+                        console.log('✅ Single quiz:', quiz);
+                        
+                        // Test adding a question (non-destructive test)
+                        console.log('➕ Testing add question endpoint...');
+                        const addResult = await apiRequest(`/quizzes/${testQuizId}/questions/single`, {
+                            method: 'POST',
+                            body: {
+                                question: 'TEST: What is 2 + 2?',
+                                options: ['3', '4', '5', '6'],
+                                correct: 1
+                            }
+                        });
+                        console.log('✅ Add question result:', addResult);
+                        
+                        // Get updated quiz to find the test question index
+                        const updatedQuiz = await apiRequest(`/quizzes/${testQuizId}`);
+                        const testQuestionIndex = updatedQuiz.questions.length - 1; // Last question should be our test
+                        
+                        // Test editing the question
+                        console.log('✏️ Testing edit question endpoint...');
+                        const editResult = await apiRequest(`/quizzes/${testQuizId}/questions/${testQuestionIndex}`, {
+                            method: 'PUT',
+                            body: {
+                                question: 'TEST: What is 3 + 3? (edited)',
+                                options: ['5', '6', '7', '8'],
+                                correct: 1
+                            }
+                        });
+                        console.log('✅ Edit question result:', editResult);
+                        
+                        // Test deleting the question to clean up
+                        console.log('🗑️ Testing delete question endpoint (cleanup)...');
+                        const deleteResult = await apiRequest(`/quizzes/${testQuizId}/questions/${testQuestionIndex}`, {
+                            method: 'DELETE'
+                        });
+                        console.log('✅ Delete question result:', deleteResult);
+                        
+                        console.log('🎉 All question management endpoints working correctly!');
+                    }
+                    
+                    // Test stats
+                    console.log('📊 Testing stats endpoint...');
+                    const stats = await apiRequest('/stats');
+                    console.log('✅ Stats:', stats);
+                }
+                
+                console.log('🎉 All API tests completed successfully!');
+                return { success: true, message: 'All APIs working correctly' };
+                
+            } catch (error) {
+                console.error('❌ API test failed:', error);
+                return { success: false, error: error.message };
+            }
+        };
+        
+        console.log('🔧 Admin interface loaded. Available functions:');
+        console.log('- testAPI() - Test all API endpoints');
+        console.log('- debugLogin() - Debug login process');
+        console.log('- checkServerStatus() - Check server connectivity');
+    </script>
+</body>
+</html>

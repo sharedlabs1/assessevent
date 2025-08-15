@@ -1,0 +1,11 @@
+question,option1,option2,option3,option4,correct_answer
+"What is Python?","Programming Language","Database","Web Browser","Operating System",0
+"Which symbol is used for comments in Python?","//","#","/* */","--",1
+"What does len() function do?","Delete items","Count items","Sort items","Copy items",1
+"What is the correct way to create a list in Python?","list = {}","list = []","list = ()","list = <>",1
+"Which keyword is used to define a function in Python?","function","def","func","define",1
+"What is the output of print(2 ** 3)?","6","8","23","Error",1
+"Which of the following is a Python data type?","int","integer","number","digit",0
+"What does the range(5) function return?","[1,2,3,4,5]","[0,1,2,3,4]","range(0,5)","Error",2
+"Which operator is used for exponentiation in Python?","^","**","pow","exp",1
+"What is the correct syntax to import a module in Python?","include module","import module","require module","use module",1
