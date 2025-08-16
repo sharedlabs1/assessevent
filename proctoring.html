@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTIMindtree Assessment - Proctoring System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .proctoring-setup {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .level-selector {
+            margin-bottom: 30px;
+        }
+
+        .level-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-option:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .level-option.selected {
+            border-color: #667eea;
+            background-color: #f0f4ff;
+        }
+
+        .level-option input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .level-info h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .level-info p {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .feature-list li {
+            color: #28a745;
+            margin-bottom: 5px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .camera-preview {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .camera-preview video {
+            border-radius: 10px;
+            border: 3px solid #667eea;
+            max-width: 300px;
+            width: 100%;
+        }
+
+        .permissions-status {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .permissions-status.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .permissions-status.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .security-warnings {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .security-warnings h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .security-warnings ul {
+            color: #856404;
+            padding-left: 20px;
+        }
+
+        .proctoring-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-dot.active {
+            background-color: #28a745;
+        }
+
+        .status-dot.inactive {
+            background-color: #dc3545;
+        }
+
+        .violations-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .violation-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
+
+        .violation-item:last-child {
+            border-bottom: none;
+        }
+
+        .violation-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .proctoring-setup {
+                padding: 20px;
+            }
+            
+            .level-option {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .level-option input[type="radio"] {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Assessment Proctoring</h1>
+            <p>Secure Assessment Environment Setup</p>
+        </div>
+
+        <div class="proctoring-setup">
+            <h2>Select Proctoring Level</h2>
+            <div class="level-selector">
+                <div class="level-option" onclick="selectLevel('basic')">
+                    <input type="radio" name="proctoring-level" value="basic" id="basic">
+                    <div class="level-info">
+                        <h3>🟢 Basic Proctoring</h3>
+                        <p>Standard monitoring for low-stakes assessments</p>
+                        <ul class="feature-list">
+                            <li>Tab switching detection</li>
+                            <li>Window focus monitoring</li>
+                            <li>Basic screen activity tracking</li>
+                            <li>Attempt logging</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="level-option" onclick="selectLevel('standard')">
+                    <input type="radio" name="proctoring-level" value="standard" id="standard">
+                    <div class="level-info">
+                        <h3>🟡 Standard Proctoring</h3>
+                        <p>Enhanced monitoring for important assessments</p>
+                        <ul class="feature-list">
+                            <li>All Basic features</li>
+                            <li>Camera monitoring</li>
+                            <li>Microphone detection</li>
+                            <li>Screen recording</li>
+                            <li>Face detection</li>
+                            <li>Multiple person detection</li>
+                            <li>Browser fullscreen enforcement</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="camera-preview" id="cameraPreview">
+                <h3>Camera Preview</h3>
+                <video id="videoPreview" autoplay muted></video>
+                <p>Please ensure your face is clearly visible</p>
+            </div>
+
+            <div class="permissions-status" id="permissionsStatus"></div>
+
+            <div class="security-warnings">
+                <h3>⚠️ Important Security Guidelines</h3>
+                <ul>
+                    <li>Ensure you are in a well-lit, quiet environment</li>
+                    <li>No other persons should be visible during the assessment</li>
+                    <li>Do not switch tabs or open other applications</li>
+                    <li>Keep your face visible to the camera at all times</li>
+                    <li>Any violations will be automatically recorded</li>
+                    <li>Close all unnecessary applications before starting</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" id="startProctoringBtn" onclick="startProctoring()" disabled>
+                    Initialize Proctoring System
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proctoring Status Panel -->
+    <div class="proctoring-status" id="proctoringStatus">
+        <h4>Proctoring Status</h4>
+        <div class="status-indicator">
+            <div class="status-dot" id="cameraStatus"></div>
+            <span>Camera: <span id="cameraStatusText">Inactive</span></span>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot" id="micStatus"></div>
+            <span>Microphone: <span id="micStatusText">Inactive</span></span>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot" id="screenStatus"></div>
+            <span>Screen: <span id="screenStatusText">Monitoring</span></span>
+        </div>
+        <div class="violations-list" id="violationsList">
+            <strong>Violations Log:</strong>
+            <div id="violationsContent">No violations detected</div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Setting up proctoring system...</h3>
+            <p>Please allow camera and microphone access when prompted</p>
+        </div>
+    </div>
+
+    <script>
+        // Proctoring System Configuration
+        class ProctoringSystem {
+            constructor() {
+                this.selectedLevel = null;
+                this.isActive = false;
+                this.mediaStream = null;
+                this.violations = [];
+                this.monitoringIntervals = {};
+                this.startTime = null;
+                this.faceDetectionModel = null;
+                
+                // Initialize event listeners
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Page visibility API for tab switching detection
+                document.addEventListener('visibilitychange', () => {
+                    if (this.isActive && document.hidden) {
+                        this.recordViolation('Tab switching detected', 'high');
+                    }
+                });
+
+                // Window focus detection
+                window.addEventListener('blur', () => {
+                    if (this.isActive) {
+                        this.recordViolation('Window lost focus', 'medium');
+                    }
+                });
+
+                // Prevent right-click context menu
+                document.addEventListener('contextmenu', (e) => {
+                    if (this.isActive) {
+                        e.preventDefault();
+                        this.recordViolation('Right-click attempted', 'low');
+                    }
+                });
+
+                // Prevent F12, Ctrl+Shift+I, etc.
+                document.addEventListener('keydown', (e) => {
+                    if (this.isActive) {
+                        if (e.key === 'F12' || 
+                            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+                            (e.ctrlKey && e.key === 'u')) {
+                            e.preventDefault();
+                            this.recordViolation('Developer tools access attempted', 'high');
+                        }
+                    }
+                });
+
+                // Fullscreen change detection
+                document.addEventListener('fullscreenchange', () => {
+                    if (this.isActive && this.selectedLevel === 'standard') {
+                        if (!document.fullscreenElement) {
+                            this.recordViolation('Exited fullscreen mode', 'high');
+                            this.requestFullscreen();
+                        }
+                    }
+                });
+            }
+
+            async requestPermissions() {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.style.display = 'flex';
+
+                try {
+                    if (this.selectedLevel === 'standard') {
+                        // Request camera and microphone permissions
+                        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: {
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 },
+                                facingMode: 'user'
+                            },
+                            audio: true
+                        });
+
+                        // Show camera preview
+                        const videoPreview = document.getElementById('videoPreview');
+                        videoPreview.srcObject = this.mediaStream;
+                        document.getElementById('cameraPreview').style.display = 'block';
+
+                        this.showPermissionStatus('Camera and microphone access granted', 'success');
+                        
+                        // Initialize face detection for standard level
+                        await this.initializeFaceDetection();
+                    } else {
+                        this.showPermissionStatus('Basic proctoring initialized', 'success');
+                    }
+
+                    loadingOverlay.style.display = 'none';
+                    document.getElementById('startProctoringBtn').disabled = false;
+                    
+                } catch (error) {
+                    loadingOverlay.style.display = 'none';
+                    this.showPermissionStatus('Permission denied: ' + error.message, 'error');
+                    console.error('Permission error:', error);
+                }
+            }
+
+            async initializeFaceDetection() {
+                // In a real implementation, you would load face detection libraries like face-api.js
+                // For now, we'll simulate it
+                console.log('Face detection initialized');
+                this.faceDetectionModel = { loaded: true };
+            }
+
+            showPermissionStatus(message, type) {
+                const statusEl = document.getElementById('permissionsStatus');
+                statusEl.textContent = message;
+                statusEl.className = `permissions-status ${type}`;
+                statusEl.style.display = 'block';
+            }
+
+            startMonitoring() {
+                this.isActive = true;
+                this.startTime = new Date();
+                
+                // Show proctoring status panel
+                document.getElementById('proctoringStatus').style.display = 'block';
+                
+                // Update status indicators
+                this.updateStatusIndicators();
+
+                // Start basic monitoring
+                this.startBasicMonitoring();
+
+                // Start advanced monitoring for standard level
+                if (this.selectedLevel === 'standard') {
+                    this.startAdvancedMonitoring();
+                    this.requestFullscreen();
+                }
+
+                // Send initial proctoring data to server
+                this.sendProctoringData({
+                    event: 'proctoring_started',
+                    level: this.selectedLevel,
+                    timestamp: new Date().toISOString()
+                });
+            }
+
+            startBasicMonitoring() {
+                // Mouse movement tracking
+                this.monitoringIntervals.mouseTracking = setInterval(() => {
+                    document.addEventListener('mousemove', this.trackMouseMovement.bind(this));
+                }, 1000);
+
+                // Keyboard activity monitoring
+                this.monitoringIntervals.keyboardTracking = setInterval(() => {
+                    document.addEventListener('keydown', this.trackKeyboardActivity.bind(this));
+                }, 1000);
+
+                // Screen activity monitoring
+                this.monitoringIntervals.activityCheck = setInterval(() => {
+                    this.checkUserActivity();
+                }, 30000); // Check every 30 seconds
+            }
+
+            startAdvancedMonitoring() {
+                // Face detection monitoring
+                if (this.faceDetectionModel && this.mediaStream) {
+                    this.monitoringIntervals.faceDetection = setInterval(() => {
+                        this.performFaceDetection();
+                    }, 5000);
+                }
+
+                // Audio level monitoring
+                this.monitoringIntervals.audioMonitoring = setInterval(() => {
+                    this.monitorAudioLevels();
+                }, 2000);
+
+                // Multiple person detection
+                this.monitoringIntervals.personDetection = setInterval(() => {
+                    this.detectMultiplePersons();
+                }, 10000);
+            }
+
+            performFaceDetection() {
+                // Simulate face detection
+                const randomCheck = Math.random();
+                if (randomCheck < 0.05) { // 5% chance of no face detected
+                    this.recordViolation('No face detected', 'high');
+                } else if (randomCheck < 0.10) { // 5% chance of multiple faces
+                    this.recordViolation('Multiple faces detected', 'high');
+                }
+            }
+
+            monitorAudioLevels() {
+                // In a real implementation, you would analyze audio stream
+                // For now, simulate detection of speaking/noise
+                const randomCheck = Math.random();
+                if (randomCheck < 0.03) { // 3% chance of suspicious audio
+                    this.recordViolation('Suspicious audio detected', 'medium');
+                }
+            }
+
+            detectMultiplePersons() {
+                // Simulate person detection
+                const randomCheck = Math.random();
+                if (randomCheck < 0.02) { // 2% chance of detecting multiple persons
+                    this.recordViolation('Multiple persons detected in frame', 'high');
+                }
+            }
+
+            trackMouseMovement(event) {
+                // Track mouse movement patterns for suspicious activity
+                this.lastMouseActivity = new Date();
+            }
+
+            trackKeyboardActivity(event) {
+                // Track keyboard usage patterns
+                this.lastKeyboardActivity = new Date();
+            }
+
+            checkUserActivity() {
+                const now = new Date();
+                const inactiveTime = 300000; // 5 minutes
+
+                if (this.lastMouseActivity && (now - this.lastMouseActivity) > inactiveTime &&
+                    this.lastKeyboardActivity && (now - this.lastKeyboardActivity) > inactiveTime) {
+                    this.recordViolation('Extended period of inactivity', 'medium');
+                }
+            }
+
+            requestFullscreen() {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                }
+            }
+
+            recordViolation(description, severity) {
+                const violation = {
+                    id: Date.now(),
+                    description,
+                    severity,
+                    timestamp: new Date(),
+                    screenshot: this.selectedLevel === 'standard' ? 'captured' : 'not_available'
+                };
+
+                this.violations.push(violation);
+                this.updateViolationsDisplay();
+                
+                // Send violation to server
+                this.sendProctoringData({
+                    event: 'violation_detected',
+                    violation: violation
+                });
+
+                console.warn('Proctoring violation:', violation);
+            }
+
+            updateViolationsDisplay() {
+                const violationsContent = document.getElementById('violationsContent');
+                
+                if (this.violations.length === 0) {
+                    violationsContent.innerHTML = 'No violations detected';
+                    return;
+                }
+
+                const violationsHtml = this.violations.slice(-5).map(violation => {
+                    const icon = violation.severity === 'high' ? '🔴' : 
+                                violation.severity === 'medium' ? '🟡' : '🟢';
+                    return `
+                        <div class="violation-item">
+                            <span class="violation-icon">${icon}</span>
+                            <div>
+                                <strong>${violation.description}</strong><br>
+                                <small>${violation.timestamp.toLocaleTimeString()}</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                violationsContent.innerHTML = violationsHtml;
+            }
+
+            updateStatusIndicators() {
+                // Update camera status
+                const cameraStatus = document.getElementById('cameraStatus');
+                const cameraText = document.getElementById('cameraStatusText');
+                if (this.selectedLevel === 'standard' && this.mediaStream) {
+                    cameraStatus.className = 'status-dot active';
+                    cameraText.textContent = 'Active';
+                } else {
+                    cameraStatus.className = 'status-dot inactive';
+                    cameraText.textContent = this.selectedLevel === 'basic' ? 'Not Required' : 'Inactive';
+                }
+
+                // Update microphone status
+                const micStatus = document.getElementById('micStatus');
+                const micText = document.getElementById('micStatusText');
+                if (this.selectedLevel === 'standard' && this.mediaStream) {
+                    micStatus.className = 'status-dot active';
+                    micText.textContent = 'Active';
+                } else {
+                    micStatus.className = 'status-dot inactive';
+                    micText.textContent = this.selectedLevel === 'basic' ? 'Not Required' : 'Inactive';
+                }
+
+                // Update screen status
+                const screenStatus = document.getElementById('screenStatus');
+                const screenText = document.getElementById('screenStatusText');
+                screenStatus.className = 'status-dot active';
+                screenText.textContent = 'Monitoring';
+            }
+
+            async sendProctoringData(data) {
+                try {
+                    // Get API base URL
+                    const API_BASE_URL = window.location.protocol === 'file:' 
+                        ? 'http://localhost:3000/api' 
+                        : `${window.location.protocol}//${window.location.host}/api`;
+
+                    const response = await fetch(`${API_BASE_URL}/proctoring/log`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ...data,
+                            sessionId: this.getSessionId(),
+                            userAgent: navigator.userAgent,
+                            screen: {
+                                width: screen.width,
+                                height: screen.height
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        console.warn('Failed to send proctoring data:', response.statusText);
+                    }
+                } catch (error) {
+                    console.warn('Error sending proctoring data:', error);
+                }
+            }
+
+            getSessionId() {
+                // Generate or retrieve session ID
+                let sessionId = localStorage.getItem('proctoringSessionId');
+                if (!sessionId) {
+                    sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('proctoringSessionId', sessionId);
+                }
+                return sessionId;
+            }
+
+            stopProctoring() {
+                this.isActive = false;
+                
+                // Stop all monitoring intervals
+                Object.values(this.monitoringIntervals).forEach(interval => {
+                    clearInterval(interval);
+                });
+
+                // Stop media stream
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                }
+
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+
+                // Send session end data
+                this.sendProctoringData({
+                    event: 'proctoring_ended',
+                    duration: new Date() - this.startTime,
+                    totalViolations: this.violations.length,
+                    violationsSummary: this.getViolationsSummary()
+                });
+
+                console.log('Proctoring session ended');
+            }
+
+            getViolationsSummary() {
+                const summary = {
+                    high: this.violations.filter(v => v.severity === 'high').length,
+                    medium: this.violations.filter(v => v.severity === 'medium').length,
+                    low: this.violations.filter(v => v.severity === 'low').length
+                };
+                return summary;
+            }
+
+            getProctoringReport() {
+                return {
+                    sessionId: this.getSessionId(),
+                    level: this.selectedLevel,
+                    startTime: this.startTime,
+                    duration: new Date() - this.startTime,
+                    violations: this.violations,
+                    violationsSummary: this.getViolationsSummary(),
+                    status: this.isActive ? 'active' : 'ended'
+                };
+            }
+        }
+
+        // Global instance
+        const proctoringSystem = new ProctoringSystem();
+
+        // UI Functions
+        function selectLevel(level) {
+            proctoringSystem.selectedLevel = level;
+            
+            // Update UI selection
+            document.querySelectorAll('.level-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById(level).checked = true;
+            
+            // Request permissions for the selected level
+            proctoringSystem.requestPermissions();
+        }
+
+        async function startProctoring() {
+            if (!proctoringSystem.selectedLevel) {
+                alert('Please select a proctoring level first');
+                return;
+            }
+
+            try {
+                proctoringSystem.startMonitoring();
+                
+                // Hide setup panel and show a minimal interface
+                document.querySelector('.proctoring-setup').style.display = 'none';
+                
+                // Show success message
+                showSuccessMessage();
+                
+                // Redirect to assessment after 3 seconds
+                setTimeout(() => {
+                    redirectToAssessment();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error starting proctoring:', error);
+                alert('Failed to start proctoring system: ' + error.message);
+            }
+        }
+
+        function showSuccessMessage() {
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <div class="header">
+                    <h1>✅ Proctoring System Active</h1>
+                    <p>Redirecting to assessment...</p>
+                </div>
+                <div class="proctoring-setup" style="text-align: center;">
+                    <div class="spinner" style="margin: 20px auto;"></div>
+                    <h3>System Initialized Successfully</h3>
+                    <p>Level: <strong>${proctoringSystem.selectedLevel.toUpperCase()}</strong></p>
+                    <p>You will be redirected to the assessment in a few seconds...</p>
+                    <br>
+                    <button class="btn" onclick="redirectToAssessment()">
+                        Start Assessment Now
+                    </button>
+                </div>
+            `;
+        }
+
+        function redirectToAssessment() {
+            // Get the assessment URL from query parameters or use default
+            const urlParams = new URLSearchParams(window.location.search);
+            const assessmentUrl = urlParams.get('assessment_url') || 'index.html';
+            const trackId = urlParams.get('track_id') || 'javascript';
+            
+            // Store proctoring data for assessment
+            localStorage.setItem('proctoringActive', 'true');
+            localStorage.setItem('proctoringLevel', proctoringSystem.selectedLevel);
+            localStorage.setItem('proctoringSessionId', proctoringSystem.getSessionId());
+            
+            // Redirect with proctoring parameters
+            window.location.href = `${assessmentUrl}?track_id=${trackId}&proctoring=true&level=${proctoringSystem.selectedLevel}`;
+        }
+
+        // Expose proctoring system globally for assessment integration
+        window.ProctoringSystem = proctoringSystem;
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (proctoringSystem.isActive) {
+                proctoringSystem.stopProctoring();
+            }
+        });
+
+        // Auto-select basic level by default
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.level-option').click();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

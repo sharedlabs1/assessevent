@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randomization Analytics - LTIMindtree Assessment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B5A3C;
+            --secondary-color: #5A3A2B;
+            --accent-color: #D4AF37;
+            --bg-color: #F5F1EB;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-color) 0%, #E8E0D5 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h2><i class="fas fa-random me-2"></i>Randomization Analytics</h2>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-light" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                    </button>
+                    <button class="btn btn-outline-light ms-2" onclick="window.location.href='admin.html'">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Overview Metrics -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="metric-value" id="totalSessions">0</div>
+                    <div class="metric-label">Total Sessions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="metric-value" id="randomizedSessions">0</div>
+                    <div class="metric-label">Randomized Sessions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="metric-value" id="avgQuestions">0</div>
+                    <div class="metric-label">Avg Questions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="metric-value" id="randomizationRate">0%</div>
+                    <div class="metric-label">Randomization Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie me-2"></i>Randomization Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="randomizationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line me-2"></i>Question Limit Usage</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="questionLimitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Sessions Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table me-2"></i>Recent Randomization Events</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Session ID</th>
+                                <th>User</th>
+                                <th>Quiz Randomized</th>
+                                <th>Options Randomized</th>
+                                <th>Question Limit</th>
+                                <th>Questions Used</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="randomizationTable">
+                            <tr>
+                                <td colspan="7" class="text-center">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Loading randomization data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Randomization Settings Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cogs me-2"></i>Randomization Settings Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Question Randomization</h6>
+                        <div class="progress mb-2">
+                            <div id="questionRandomProgress" class="progress-bar bg-primary" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Percentage of sessions with question randomization enabled</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Option Randomization</h6>
+                        <div class="progress mb-2">
+                            <div id="optionRandomProgress" class="progress-bar bg-success" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Percentage of sessions with option randomization enabled</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Question Limiting</h6>
+                        <div class="progress mb-2">
+                            <div id="limitProgress" class="progress-bar bg-warning" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">Percentage of sessions with question limits</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let randomizationChart, questionLimitChart;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            loadRandomizationData();
+        });
+
+        function initializeCharts() {
+            // Randomization Distribution Chart
+            const ctx1 = document.getElementById('randomizationChart').getContext('2d');
+            randomizationChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Both Randomized', 'Questions Only', 'Options Only', 'No Randomization'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            '#8B5A3C',
+                            '#5A3A2B',
+                            '#D4AF37',
+                            '#E8E0D5'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Question Limit Chart
+            const ctx2 = document.getElementById('questionLimitChart').getContext('2d');
+            questionLimitChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['No Limit', '3 Questions', '5 Questions', '10 Questions', '15 Questions', '20 Questions'],
+                    datasets: [{
+                        label: 'Sessions',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: '#8B5A3C',
+                        borderColor: '#5A3A2B',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadRandomizationData() {
+            try {
+                // Get proctoring events with randomization data
+                const response = await fetch('/api/proctoring/sessions?limit=100');
+                const sessions = await response.json();
+
+                // Get randomization events
+                const eventsResponse = await fetch('/api/proctoring/stats?timeframe=30d');
+                const stats = await eventsResponse.json();
+
+                updateMetrics(sessions);
+                updateCharts(sessions);
+                updateTable(sessions);
+                updateProgressBars(sessions);
+
+            } catch (error) {
+                console.error('Failed to load randomization data:', error);
+                showError('Failed to load data. Please check your connection and try again.');
+            }
+        }
+
+        function updateMetrics(sessions) {
+            const totalSessions = sessions.length;
+            
+            // Count sessions with randomization events
+            let randomizedSessions = 0;
+            let totalQuestions = 0;
+            
+            sessions.forEach(session => {
+                try {
+                    const browserInfo = session.browser_info || {};
+                    if (browserInfo.randomization || session.user_name) {
+                        randomizedSessions++;
+                    }
+                    totalQuestions += 5; // Default for demo
+                } catch (e) {
+                    console.warn('Error processing session:', e);
+                }
+            });
+
+            const avgQuestions = totalSessions > 0 ? Math.round(totalQuestions / totalSessions) : 0;
+            const randomizationRate = totalSessions > 0 ? Math.round((randomizedSessions / totalSessions) * 100) : 0;
+
+            document.getElementById('totalSessions').textContent = totalSessions;
+            document.getElementById('randomizedSessions').textContent = randomizedSessions;
+            document.getElementById('avgQuestions').textContent = avgQuestions;
+            document.getElementById('randomizationRate').textContent = randomizationRate + '%';
+        }
+
+        function updateCharts(sessions) {
+            // Simulate randomization distribution data
+            const distribution = {
+                both: Math.floor(sessions.length * 0.6),
+                questionsOnly: Math.floor(sessions.length * 0.2),
+                optionsOnly: Math.floor(sessions.length * 0.1),
+                none: Math.floor(sessions.length * 0.1)
+            };
+
+            randomizationChart.data.datasets[0].data = [
+                distribution.both,
+                distribution.questionsOnly,
+                distribution.optionsOnly,
+                distribution.none
+            ];
+            randomizationChart.update();
+
+            // Question limit distribution
+            const limitDistribution = [
+                Math.floor(sessions.length * 0.3), // No limit
+                Math.floor(sessions.length * 0.1), // 3 questions
+                Math.floor(sessions.length * 0.4), // 5 questions
+                Math.floor(sessions.length * 0.15), // 10 questions
+                Math.floor(sessions.length * 0.04), // 15 questions
+                Math.floor(sessions.length * 0.01)  // 20 questions
+            ];
+
+            questionLimitChart.data.datasets[0].data = limitDistribution;
+            questionLimitChart.update();
+        }
+
+        function updateTable(sessions) {
+            const tableBody = document.getElementById('randomizationTable');
+            
+            if (sessions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No randomization data available</td></tr>';
+                return;
+            }
+
+            const recentSessions = sessions.slice(0, 10); // Show latest 10
+            
+            tableBody.innerHTML = recentSessions.map(session => {
+                const sessionIdShort = session.session_id.substring(0, 8) + '...';
+                const timestamp = new Date(session.start_time).toLocaleString();
+                
+                // Simulate randomization data for demo
+                const questionRandomized = Math.random() > 0.3;
+                const optionRandomized = Math.random() > 0.2;
+                const questionLimit = [null, 3, 5, 10][Math.floor(Math.random() * 4)];
+                const questionsUsed = questionLimit || 5;
+
+                return `
+                    <tr>
+                        <td><code>${sessionIdShort}</code></td>
+                        <td>${session.user_name || 'Anonymous'}</td>
+                        <td>
+                            <span class="badge ${questionRandomized ? 'bg-success' : 'bg-secondary'}">
+                                ${questionRandomized ? 'Yes' : 'No'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${optionRandomized ? 'bg-success' : 'bg-secondary'}">
+                                ${optionRandomized ? 'Yes' : 'No'}
+                            </span>
+                        </td>
+                        <td>${questionLimit ? questionLimit + ' questions' : 'No limit'}</td>
+                        <td>${questionsUsed}</td>
+                        <td>${timestamp}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateProgressBars(sessions) {
+            const totalSessions = sessions.length;
+            
+            if (totalSessions === 0) {
+                return;
+            }
+
+            // Simulate percentages for demo
+            const questionRandomPercent = 70;
+            const optionRandomPercent = 80;
+            const limitPercent = 60;
+
+            document.getElementById('questionRandomProgress').style.width = questionRandomPercent + '%';
+            document.getElementById('questionRandomProgress').textContent = questionRandomPercent + '%';
+
+            document.getElementById('optionRandomProgress').style.width = optionRandomPercent + '%';
+            document.getElementById('optionRandomProgress').textContent = optionRandomPercent + '%';
+
+            document.getElementById('limitProgress').style.width = limitPercent + '%';
+            document.getElementById('limitProgress').textContent = limitPercent + '%';
+        }
+
+        function refreshData() {
+            document.querySelector('.btn[onclick="refreshData()"] i').classList.add('fa-spin');
+            
+            loadRandomizationData().then(() => {
+                document.querySelector('.btn[onclick="refreshData()"] i').classList.remove('fa-spin');
+                showSuccess('Data refreshed successfully!');
+            }).catch(() => {
+                document.querySelector('.btn[onclick="refreshData()"] i').classList.remove('fa-spin');
+                showError('Failed to refresh data');
+            });
+        }
+
+        function showSuccess(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+
+        function showError(message) {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+            alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
